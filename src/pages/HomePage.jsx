@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { fetchUsers } from "../services/api";
 
 function HomePage() {
     const [users, setUsers] = useState([]);
