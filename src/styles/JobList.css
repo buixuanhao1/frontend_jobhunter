@@ -1,0 +1,81 @@
+.card-job-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.job-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dflex-mobile,
+.dflex-pc {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.card-job-content {
+    display: flex;
+    align-items: center;
+}
+
+.card-job-left img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+.card-job-right {
+    margin-left: 15px;
+}
+
+.job-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
+
+.job-title:hover {
+    color: #007bff;
+}
+
+.job-location,
+.job-updatedAt {
+    font-size: 14px;
+    color: #666;
+}
+
+.job-location svg,
+.job-updatedAt svg {
+    margin-right: 5px;
+    color: #58aaab;
+}
+
+.empty {
+    text-align: center;
+    color: #999;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .card-job-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .card-job-right {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}

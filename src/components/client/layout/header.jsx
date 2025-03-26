@@ -12,26 +12,26 @@ const Header = () => {
 
     const items = [
         {
-            label: 'Home',
+
             key: 'home',
             icon: <HomeOutlined />,
-            label: <NavLink to="/">User</NavLink>
+            label: <NavLink to="/">Home</NavLink>
 
         },
         {
-            label: 'User',
+
             key: 'user',
             icon: <UserOutlined />,
             label: <NavLink to="/user">User</NavLink>
         },
         {
-            label: 'Company',
+
             key: 'company',
             icon: <BankOutlined />,
             label: <NavLink to="/company">Company</NavLink>
         },
         {
-            label: 'Job',
+
             key: 'job',
             icon: <FileTextOutlined />,
             label: <NavLink to="/job">User</NavLink>

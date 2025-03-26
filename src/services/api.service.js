@@ -33,9 +33,36 @@ const updateUserAPI = (id, name, address, age, gender) => {
     return axios.put(URL_BACKEND, data)
 }
 
+const deleteUserAPI = (id) => {
+    const URL_BACKEND = `/api/v1/users/${id}`;
+    return axios.delete(URL_BACKEND);
+};
+
 const fetchAllUserAPI = () => {
     const URL_BACKEND = "/api/v1/users";
     return axios.get(URL_BACKEND)
 }
 
-export { loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI };
+const fetchAllCompanyAPI = (query) => {
+    const URL_BACKEND = `/api/v1/companies?${query}`;
+    return axios.get(URL_BACKEND)
+}
+
+const callFetchCompanyById = (id) => {
+    const URL_BACKEND = `/api/v1/companies/${id}`;
+    return axios.get(URL_BACKEND)
+}
+
+const fetchAllJobAPI = (query) => {
+    const URL_BACKEND = `/api/v1/jobs?${query}`;
+    return axios.get(URL_BACKEND)
+}
+
+const callFetchJobById = (id) => {
+    const URL_BACKEND = `/api/v1/jobs/${id}`;
+    return axios.get(URL_BACKEND)
+}
+
+
+
+export { callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI, loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI };

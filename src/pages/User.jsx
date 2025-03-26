@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import UserForm from "../components/user/user.form";
 import UserTable from "../components/user/user.table";
 import { fetchAllUserAPI } from "../services/api.service";
-import UserUpdate from "../components/user/user.update";
+
 
 const UserPage = () => {
 
@@ -21,7 +21,8 @@ const UserPage = () => {
             <UserForm FetchAllUser={FetchAllUser} />
             <UserTable
                 dataSource={dataSource}
-                FetchAllUser={FetchAllUser} />
+                FetchAllUser={FetchAllUser}
+            />
         </>
     )
 }
