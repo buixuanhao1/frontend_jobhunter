@@ -36,7 +36,6 @@ const UsersTable = () => {
 
     useEffect(() => {
         FetchAllUser();
-        console.log("Component render!");
     }, []);
 
     const FetchAllUser = async () => {

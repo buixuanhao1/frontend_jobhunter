@@ -9,7 +9,6 @@ const UserPage = () => {
     const [dataSource, setDataSource] = useState([]);
     useEffect(() => {
         FetchAllUser();
-        console.log("Component render!");
     }, []);
 
     const FetchAllUser = async () => {

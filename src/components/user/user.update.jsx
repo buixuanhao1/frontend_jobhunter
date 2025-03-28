@@ -9,7 +9,6 @@ const UserUpdate = (props) => {
     const [age, setAge] = useState();
     const [id, setId] = useState();
     const [gender, setGender] = useState();
-    console.log(dataUpdate);
     //--Model
     useEffect(() => {
         if (dataUpdate) {

@@ -63,6 +63,36 @@ const callFetchJobById = (id) => {
     return axios.get(URL_BACKEND)
 }
 
+const registerUserAPI = (name, email, password, gender, address, age) => {
+    const URL_BACKEND = "/api/v1/auth/register";
+    const data = {
+        name: name,
+        email: email,
+        password: password,
+        gender: gender,
+        address: address,
+        age: age
+    }
+    return axios.post(URL_BACKEND, data)
+}
 
 
-export { callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI, loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI };
+const deleteCompanyAPI = (id) => {
+    const URL_BACKEND = `/api/v1/companies/${id}`;
+    return axios.delete(URL_BACKEND);
+};
+
+const getAccount = () => {
+    const URL_BACKEND = "/api/v1/auth/account";
+    return axios.get(URL_BACKEND)
+}
+
+const logoutUserAPI = () => {
+    const URL_BACKEND = "/api/v1/auth/logout";
+    return axios.post(URL_BACKEND);
+}
+
+export {
+    deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
+    loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI
+};

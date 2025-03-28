@@ -12,7 +12,6 @@ import { useParams } from "react-router-dom";
 dayjs.extend(relativeTime);
 
 const ClientJobDetailPage = () => {
-    console.log("alooo dcmm");
     const [jobDetail, setJobDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,7 +19,6 @@ const ClientJobDetailPage = () => {
     const { id } = useParams();  // ✅ Lấy id từ URL path
 
 
-    console.log(id);
 
 
     useEffect(() => {
@@ -28,10 +26,8 @@ const ClientJobDetailPage = () => {
             if (id) {
                 setIsLoading(true);
                 try {
-                    console.log("hao hueng min");
 
                     const res = await callFetchJobById(id);
-                    console.log(res);
 
                     if (res?.data) {
                         setJobDetail(res.data);
