@@ -1,96 +1,134 @@
 import { CheckSquareOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { FooterToolbar, ModalForm, ProCard, ProFormText, ProFormTextArea } from "@ant-design/pro-components";
-import { Col, ConfigProvider, Form, Modal, Row, Upload, message, notification } from "antd";
-import { useEffect, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { callCreateCompany, callUpdateCompany, callUploadSingleFile } from "../../services/api.service";
-import { v4 as uuidv4 } from "uuid";
-import enUS from "antd/lib/locale/en_US";
+import { Modal, Form, Input, message, Upload, ConfigProvider } from "antd";
+import { useState } from "react";
+import { callCreateCompany, callUpdateCompany, callUploadSingleFile } from "../../../services/api.service";
+import enUS from 'antd/lib/locale/en_US';
 
 const ModalCompany = ({ openModal, setOpenModal, dataInit, setDataInit, reloadTable }) => {
+    const [form] = Form.useForm();
     const [loadingUpload, setLoadingUpload] = useState(false);
     const [dataLogo, setDataLogo] = useState([]);
-    const [value, setValue] = useState("");
-    const [form] = Form.useForm();
 
-    useEffect(() => {
-        if (dataInit) {
-            setValue(dataInit.description || "");
-            form.setFieldsValue({ name: dataInit.name, address: dataInit.address });
-            setDataLogo(dataInit.logo ? [{ name: dataInit.logo, uid: uuidv4() }] : []);
-        }
-    }, [dataInit]);
-
-    const submitCompany = async (values) => {
+    const handleSubmit = async (values) => {
         if (!dataLogo.length) {
             message.error("Vui lòng upload ảnh Logo");
             return;
         }
 
-        const payload = { ...values, description: value, logo: dataLogo[0].name };
-        const res = dataInit?.id ? await callUpdateCompany(dataInit.id, payload) : await callCreateCompany(payload);
+        const payload = { ...values, logo: dataLogo[0].name };
+        const res = dataInit?.id
+            ? await callUpdateCompany(dataInit.id, payload)
+            : await callCreateCompany(payload);
 
         if (res.data) {
             message.success(dataInit?.id ? "Cập nhật thành công" : "Thêm mới thành công");
             handleReset();
             reloadTable();
         } else {
-            notification.error({ message: "Có lỗi xảy ra", description: res.message });
+            message.error("Có lỗi xảy ra");
         }
     };
 
     const handleReset = () => {
         form.resetFields();
-        setValue("");
+        setDataLogo([]);
         setDataInit(null);
         setOpenModal(false);
     };
 
     const handleUploadFileLogo = async ({ file, onSuccess, onError }) => {
-        const res = await callUploadSingleFile(file, "company");
-        if (res?.data) {
-            setDataLogo([{ name: res.data.fileName, uid: uuidv4() }]);
-            onSuccess?.("ok");
-        } else {
-            onError?.(new Error(res.message));
+        setLoadingUpload(true);
+        try {
+            const res = await callUploadSingleFile(file, "company");
+            if (res?.data) {
+                setDataLogo([{ name: res.data.fileName }]);
+                onSuccess?.("ok");
+            } else {
+                onError?.(new Error(res.message));
+            }
+        } catch (error) {
+            onError?.(new Error('Upload failed'));
+        } finally {
+            setLoadingUpload(false);
         }
     };
 
+    const beforeUpload = (file) => {
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+            message.error('Chỉ chấp nhận file JPG/PNG!');
+            return false;
+        }
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            message.error('Kích thước file phải nhỏ hơn 2MB!');
+            return false;
+        }
+        return true;
+    };
+
     return (
-        <ModalForm
+        <Modal
             title={dataInit?.id ? "Cập nhật Company" : "Tạo mới Company"}
             open={openModal}
-            onFinish={submitCompany}
-            form={form}
-            modalProps={{ onCancel: handleReset }}
-            submitter={{ submitButtonProps: { icon: <CheckSquareOutlined /> } }}
+            onOk={() => form.submit()}
+            onCancel={handleReset}
+            okText="Lưu"
+            cancelText="Hủy"
         >
-            <Row gutter={16}>
-                <Col span={24}>
-                    <ProFormText label="Tên công ty" name="name" rules={[{ required: true, message: "Vui lòng nhập tên công ty" }]} />
-                </Col>
-                <Col span={8}>
-                    <Form.Item label="Ảnh Logo">
-                        <ConfigProvider locale={enUS}>
-                            <Upload
-                                listType="picture-card"
-                                maxCount={1}
-                                customRequest={handleUploadFileLogo}
-                            >
-                                {loadingUpload ? <LoadingOutlined /> : <PlusOutlined />}
-                            </Upload>
-                        </ConfigProvider>
-                    </Form.Item>
-                </Col>
-                <Col span={16}>
-                    <ProFormTextArea label="Địa chỉ" name="address" rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]} />
-                </Col>
-                <ProCard title="Miêu tả" headerBordered>
-                    <ReactQuill theme="snow" value={value} onChange={setValue} />
-                </ProCard>
-            </Row>
-        </ModalForm>
+            <Form
+                form={form}
+                onFinish={handleSubmit}
+                initialValues={dataInit}
+                layout="vertical"
+            >
+                <Form.Item
+                    label="Tên công ty"
+                    name="name"
+                    rules={[{ required: true, message: "Vui lòng nhập tên công ty" }]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    label="Ảnh Logo"
+                    required
+                    rules={[{ required: true, message: "Vui lòng upload ảnh Logo" }]}
+                >
+                    <ConfigProvider locale={enUS}>
+                        <Upload
+                            listType="picture-card"
+                            maxCount={1}
+                            customRequest={handleUploadFileLogo}
+                            beforeUpload={beforeUpload}
+                            defaultFileList={dataInit?.logo ? [{
+                                uid: '-1',
+                                name: dataInit.logo,
+                                status: 'done',
+                                url: `${import.meta.env.VITE_BACKEND_URL}/storage/company/${dataInit.logo}`
+                            }] : []}
+                        >
+                            {loadingUpload ? <LoadingOutlined /> : <PlusOutlined />}
+                        </Upload>
+                    </ConfigProvider>
+                </Form.Item>
+
+                <Form.Item
+                    label="Địa chỉ"
+                    name="address"
+                    rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+                >
+                    <Input.TextArea />
+                </Form.Item>
+
+                <Form.Item
+                    label="Mô tả"
+                    name="description"
+                >
+                    <Input.TextArea />
+                </Form.Item>
+            </Form>
+        </Modal>
     );
 };
 

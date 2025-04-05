@@ -92,7 +92,29 @@ const logoutUserAPI = () => {
     return axios.post(URL_BACKEND);
 }
 
+const callCreateCompany = (data) => {
+    const URL_BACKEND = "/api/v1/companies";
+    return axios.post(URL_BACKEND, data);
+};
+
+const callUpdateCompany = (id, data) => {
+    const URL_BACKEND = `/api/v1/companies/${id}`;
+    return axios.put(URL_BACKEND, data);
+};
+
+const callUploadSingleFile = (file, folder) => {
+    const URL_BACKEND = "/api/v1/files";
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    return axios.post(URL_BACKEND, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+};
+
 export {
     deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
-    loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI
+    loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI, callCreateCompany, callUpdateCompany, callUploadSingleFile
 };
