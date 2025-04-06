@@ -17,6 +17,11 @@ import PrivateRoute from './pages/private.route.jsx';
 import { AuthWrapper } from './components/context/auth.context.jsx';
 import LayoutAdmin from './components/admin/layout.admin.jsx';
 import CompanyTable from './pages/admin/company.jsx';
+import UserTable from './pages/admin/user.jsx';
+import ManagePage from './pages/admin/job/manage.jsx';
+import ResumePage from './pages/admin/resume.jsx';
+import PermissionPage from './pages/admin/permission.jsx';
+import RolePage from './pages/admin/role.jsx';
 
 const router = createBrowserRouter([
   {
@@ -47,9 +52,12 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <h1>Admin Dashboard</h1> },
-      { path: 'users', element: <UserPage /> },
-      { path: 'jobs', element: <JobPage /> },
+      { path: 'user', element: <UserTable /> },
+      { path: 'job', element: <ManagePage /> },
       { path: 'company', element: <CompanyTable /> },
+      { path: 'resume', element: <ResumePage /> },
+      { path: 'permission', element: <PermissionPage /> },
+      { path: 'role', element: <RolePage /> },
     ],
   },
 
