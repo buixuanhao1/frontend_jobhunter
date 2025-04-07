@@ -52,12 +52,12 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <h1>Admin Dashboard</h1> },
-      { path: 'user', element: <UserTable /> },
-      { path: 'job', element: <ManagePage /> },
-      { path: 'company', element: <CompanyTable /> },
-      { path: 'resume', element: <ResumePage /> },
-      { path: 'permission', element: <PermissionPage /> },
-      { path: 'role', element: <RolePage /> },
+      { path: 'user', element: <PrivateRoute><UserTable /></PrivateRoute> },
+      { path: 'job', element: <PrivateRoute><ManagePage /></PrivateRoute> },
+      { path: 'company', element: <PrivateRoute><CompanyTable /></PrivateRoute> },
+      { path: 'resume', element: <PrivateRoute><ResumePage /></PrivateRoute> },
+      { path: 'permission', element: <PrivateRoute><PermissionPage /></PrivateRoute> },
+      { path: 'role', element: <PrivateRoute><RolePage /></PrivateRoute> },
     ],
   },
 

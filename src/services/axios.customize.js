@@ -1,36 +1,107 @@
 import axios from "axios";
+import { notification } from "antd";
 
-// Set config defaults when creating the instance
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL
+    baseURL: import.meta.env.VITE_BACKEND_URL,
+    withCredentials: true,
+    headers: {
+        "Content-Type": "application/json",
+    },
 });
 
-// Alter defaults after instance has been created
-// instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
-instance.interceptors.request.use(function (config) {
-    if (typeof window !== "undefined" && window && window.localStorage &&
-        window.localStorage.getItem('access_token')) {
-        config.headers.Authorization = 'Bearer ' + window.localStorage.getItem('access_token');
+// Queue để lưu các request đang chờ refresh token
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+const handleRefreshToken = async () => {
+    if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+        });
     }
-    // Do something before request is sent 
-    return config;
-}, function (error) {
-    // Do something with request error 
-    return Promise.reject(error);
-});
 
-// Add a response interceptor
-instance.interceptors.response.use(function (response) {
-    // Any status code that lie within the range of 2xx cause this function to trigger
-    // Do something with response data
+    isRefreshing = true;
+    try {
+        console.log("Starting refresh token process");
+        const res = await instance.get('/api/v1/auth/refresh');
+        console.log("Refresh token response:", res);
 
-    if (response.data && response.data.data) return response.data;
-    return response;
-}, function (error) {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
-    // Do something with response error
-    console.log(error.response.data);
-    if (error.response) return error.response.data
-    return Promise.reject(error);
-});
+        if (res.data && res.data.access_token) {
+            localStorage.setItem("access_token", res.data.access_token);
+            processQueue(null, res.data.access_token);
+            return res.data.access_token;
+        }
+        throw new Error("No access token in response");
+    } catch (error) {
+        console.error("Error refreshing token:", error);
+        processQueue(error, null);
+        throw error;
+    } finally {
+        isRefreshing = false;
+    }
+};
+
+// Request interceptor
+instance.interceptors.request.use(
+    (config) => {
+        const accessToken = localStorage.getItem("access_token");
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor
+instance.interceptors.response.use(
+    (response) => {
+        return response.data;
+    },
+    async (error) => {
+        const originalRequest = error.config;
+
+        // Nếu lỗi 401 và không phải là request refresh token
+        if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/api/v1/auth/refresh') {
+            originalRequest._retry = true;
+
+            try {
+                const newToken = await handleRefreshToken();
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                return instance(originalRequest);
+            } catch (refreshError) {
+                console.error("Failed to refresh token:", refreshError);
+                // Chỉ chuyển hướng về login nếu không phải là request getAccount
+                if (originalRequest.url !== '/api/v1/auth/account') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(refreshError);
+            }
+        }
+
+        // Xử lý lỗi 403
+        if (error.response?.status === 403) {
+            notification.error({
+                message: "Không có quyền truy cập",
+                description: error.response?.data?.message || "Bạn không có quyền sử dụng chức năng này."
+            });
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 export default instance;

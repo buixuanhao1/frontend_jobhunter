@@ -7,15 +7,19 @@ import { AuthContext } from "./components/context/auth.context";
 
 function App() {
   const { setUser } = useContext(AuthContext);
-  console.log("alo dcmm");
   useEffect(() => {
     GetAccount();
   }, []);
 
   const GetAccount = async () => {
-    const res = await getAccount();
-    if (res.data) {
-      setUser(res.data.user);
+    try {
+      const res = await getAccount();
+      if (res.data) {
+        setUser(res.data.user);
+      }
+    } catch (error) {
+      console.error("Error getting account:", error);
+      // Let axios handle the error and refresh token if needed
     }
   }
 

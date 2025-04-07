@@ -1,16 +1,34 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Layout, Menu, Button, message, Dropdown, Space, Avatar } from 'antd';
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { MenuFoldOutlined, MenuUnfoldOutlined, BugOutlined, AppstoreOutlined, UserOutlined, ScheduleOutlined, AliwangwangOutlined, ApiOutlined, ExceptionOutlined, BankOutlined } from '@ant-design/icons';
-import { logoutUserAPI } from '../../services/api.service';
+import { logoutUserAPI, getAccount } from '../../services/api.service';
 import { AuthContext } from '../context/auth.context';
 
 const { Content, Sider } = Layout;
 
 const LayoutAdmin = () => {
     const [collapsed, setCollapsed] = useState(false);
-    const navigate = useNavigate(); // Điều hướng trang
-    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { user, setUser } = useContext(AuthContext);
+
+    useEffect(() => {
+        const fetchAccount = async () => {
+            try {
+                const res = await getAccount();
+                if (res.data) {
+                    setUser(res.data.user);
+                }
+            } catch (error) {
+                console.error("Error fetching account:", error);
+                if (error.response && error.response.status === 401) {
+                    navigate('/login');
+                }
+            }
+        };
+
+        fetchAccount();
+    }, []);
 
     const menuItems = [
         { label: <Link to='/admin'>Dashboard</Link>, key: '/admin', icon: <AppstoreOutlined /> },
@@ -26,7 +44,7 @@ const LayoutAdmin = () => {
         const res = await logoutUserAPI();
         if (res && +res.statusCode === 200) {
             message.success('Đăng xuất thành công');
-            navigate('/'); // Quay về trang chủ
+            navigate('/');
         }
     };
 
