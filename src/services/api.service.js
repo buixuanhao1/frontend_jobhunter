@@ -241,6 +241,27 @@ const callFetchRoleById = (id) => {
     return axios.get(URL_BACKEND);
 };
 
+const callCreateResume = (urlCV, jobId, email, userId) => {
+    const URL_BACKEND = "/api/v1/resumes";
+    const data = {
+        url: urlCV,
+        email: email,
+        status: "PENDING",
+        user: {
+            "id": userId
+        },
+        job: {
+            "id": jobId
+        }
+    }
+    return axios.post(URL_BACKEND, data);
+}
+
+const callFetchResumeByUser = () => {
+    const URL_BACKEND = "/api/v1/resumes/by-user";
+    return axios.post(URL_BACKEND);
+}
+
 export {
     deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
     loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI, callCreateCompany, callUpdateCompany, callUploadSingleFile,
@@ -250,7 +271,7 @@ export {
     // Job APIs
     callCreateJob, callUpdateJob, callDeleteJob,
     // Resume APIs
-    fetchAllResumeAPI, callDeleteResume, callUpdateResumeStatus, callFetchResumeById,
+    fetchAllResumeAPI, callDeleteResume, callUpdateResumeStatus, callFetchResumeById, callCreateResume, callFetchResumeByUser,
     // Permission APIs
     fetchAllPermissionAPI, callCreatePermission, callUpdatePermission, callDeletePermission, callFetchPermissionById,
     // Role APIs
