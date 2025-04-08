@@ -1,11 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Input, Modal, message, InputNumber, Select } from 'antd';
-import { callCreateJob, callUpdateJob } from '../../../services/api.service';
+import { callCreateJob, callUpdateJob, fetchAllSkillAPI } from '../../../services/api.service';
 
 const ModalJob = (props) => {
     const { openModal, setOpenModal, dataInit, setDataInit, reloadTable } = props;
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [skills, setSkills] = useState([]);
+
+    useEffect(() => {
+        fetchSkills();
+    }, []);
+
+    useEffect(() => {
+        if (dataInit) {
+            // Transform the skills data for the form
+            const initialValues = {
+                ...dataInit,
+                skills: dataInit.skills?.map(skill => skill.id) || []
+            };
+            form.setFieldsValue(initialValues);
+        }
+    }, [dataInit, form]);
+
+    const fetchSkills = async () => {
+        try {
+            const res = await fetchAllSkillAPI('page=0&size=100');
+            if (res && res.data) {
+                const skillsList = res.data.result.content || [];
+                setSkills(skillsList);
+            }
+        } catch (error) {
+            console.error('Error fetching skills:', error);
+        }
+    };
 
     const handleCloseModal = () => {
         setOpenModal(false);
@@ -16,8 +44,16 @@ const ModalJob = (props) => {
     const onFinish = async (values) => {
         setLoading(true);
         try {
+            // Transform skills array to use objects with id property
+            const transformedValues = {
+                ...values,
+                skills: values.skills.map(skillId => ({
+                    id: skillId
+                }))
+            };
+
             if (dataInit?.id) {
-                const res = await callUpdateJob(dataInit.id, values);
+                const res = await callUpdateJob(dataInit.id, transformedValues);
                 if (res.data) {
                     message.success('Cập nhật job thành công');
                     handleCloseModal();
@@ -26,7 +62,7 @@ const ModalJob = (props) => {
                     message.error(res.message);
                 }
             } else {
-                const res = await callCreateJob(values);
+                const res = await callCreateJob(transformedValues);
                 if (res.data) {
                     message.success('Thêm mới job thành công');
                     handleCloseModal();
@@ -76,12 +112,10 @@ const ModalJob = (props) => {
                         mode="multiple"
                         allowClear
                         placeholder="Chọn skills"
-                        options={[
-                            { label: 'JavaScript', value: 'javascript' },
-                            { label: 'TypeScript', value: 'typescript' },
-                            { label: 'React', value: 'react' },
-                            { label: 'Node.js', value: 'nodejs' },
-                        ]}
+                        options={skills.map(skill => ({
+                            label: skill.name,
+                            value: skill.id
+                        }))}
                     />
                 </Form.Item>
 

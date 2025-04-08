@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Space, Popconfirm, message, Button, Input, Form, Select, Tag } from "antd";
+import { Table, Space, Popconfirm, message, Button, Input, Form, Select, Tag, Alert } from "antd";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { fetchAllRoleAPI, callDeleteRole, fetchAllPermissionAPI } from "../../services/api.service";
 import ModalRole from "../../components/admin/role/modal.role";
 import dayjs from 'dayjs';
+import { buildQuery, groupByPermission } from "../../config/utils";
 
 const RolePage = () => {
     const [roles, setRoles] = useState([]);
@@ -13,11 +14,12 @@ const RolePage = () => {
 
     // State để mở Modal
     const [openModal, setOpenModal] = useState(false);
-    const [dataInit, setDataInit] = useState(null);
+    const [singleRole, setSingleRole] = useState(null);
     const [form] = Form.useForm();
 
     // State cho danh sách permission
     const [listPermissions, setListPermissions] = useState([]);
+    const [noData, setNoData] = useState(false);
 
     useEffect(() => {
         FetchAllRoles(1, meta.pageSize, filters);
@@ -26,45 +28,125 @@ const RolePage = () => {
 
     const fetchPermissions = async () => {
         try {
-            const res = await fetchAllPermissionAPI('page=1&size=100');
+            const res = await fetchAllPermissionAPI();
+            console.log("Permissions API response:", res);
+
             if (res && res.data) {
-                setListPermissions(res.data.result || []);
+                // Kiểm tra cấu trúc dữ liệu
+                console.log("Permissions data structure:", res.data);
+
+                // Kiểm tra các cấu trúc phổ biến và chọn đúng cấu trúc
+                let permissionsData = [];
+
+                if (res.data.result && Array.isArray(res.data.result)) {
+                    console.log("Permissions in 'result' array");
+                    permissionsData = res.data.result;
+                }
+                else if (res.data.result && res.data.result.content && Array.isArray(res.data.result.content)) {
+                    console.log("Permissions in 'result.content' array");
+                    permissionsData = res.data.result.content;
+                }
+                else if (res.data.content && Array.isArray(res.data.content)) {
+                    console.log("Permissions in 'content' array");
+                    permissionsData = res.data.content;
+                }
+                else if (Array.isArray(res.data)) {
+                    console.log("Permissions in direct array");
+                    permissionsData = res.data;
+                }
+
+                // Nếu không có dữ liệu từ API
+                if (permissionsData.length === 0) {
+                    console.log("No permissions data available");
+                    setNoData(true);
+                    setListPermissions([]);
+                } else {
+                    console.log("Processed permissions data:", permissionsData);
+                    const groupedPermissions = groupByPermission(permissionsData);
+                    console.log("Grouped permissions:", groupedPermissions);
+                    setListPermissions(groupedPermissions);
+                    setNoData(false);
+                }
+            } else {
+                console.log("No data from permissions API");
+                setNoData(true);
+                setListPermissions([]);
             }
         } catch (error) {
             console.error("Error fetching permissions:", error);
+            setNoData(true);
+            setListPermissions([]);
         }
-    };
-
-    const buildQuery = (page, pageSize, searchFilters) => {
-        let query = `page=${page}&size=${pageSize}&sort=updatedAt,desc`;
-
-        if (searchFilters.name) {
-            query = `filter=name ~ '${searchFilters.name}'&${query}`;
-        }
-
-        return query;
     };
 
     const FetchAllRoles = async (page = 1, pageSize = 10, searchFilters = filters) => {
         setIsFetching(true);
         try {
             const query = buildQuery(page, pageSize, searchFilters);
+            console.log("Query for roles:", query);
             const res = await fetchAllRoleAPI(query);
+            console.log("Roles API response:", res);
+
             if (res && res.data) {
-                setRoles(res.data.result || []);
-                setMeta({
-                    page: res.data.meta.page,
-                    pageSize: res.data.meta.pageSize || 10,
-                    total: res.data.meta.total || 0,
-                });
+                // Kiểm tra cấu trúc dữ liệu
+                console.log("Roles data structure:", res.data);
+
+                // Kiểm tra các cấu trúc phổ biến và chọn đúng cấu trúc
+                let rolesData = [];
+                let metaData = { page: 1, pageSize: 10, total: 0 };
+
+                if (res.data.result && Array.isArray(res.data.result)) {
+                    console.log("Roles in 'result' array");
+                    rolesData = res.data.result;
+                    metaData = {
+                        page: res.data.meta?.page || 1,
+                        pageSize: res.data.meta?.pageSize || 10,
+                        total: res.data.meta?.total || 0
+                    };
+                }
+                else if (res.data.result && res.data.result.content && Array.isArray(res.data.result.content)) {
+                    console.log("Roles in 'result.content' array");
+                    rolesData = res.data.result.content;
+                    metaData = {
+                        page: res.data.meta?.page || 1,
+                        pageSize: res.data.meta?.pageSize || 10,
+                        total: res.data.meta?.total || 0
+                    };
+                }
+                else if (res.data.content && Array.isArray(res.data.content)) {
+                    console.log("Roles in 'content' array");
+                    rolesData = res.data.content;
+                    metaData = {
+                        page: res.data.number + 1 || 1,
+                        pageSize: res.data.size || 10,
+                        total: res.data.totalElements || 0
+                    };
+                }
+                else if (Array.isArray(res.data)) {
+                    console.log("Roles in direct array");
+                    rolesData = res.data;
+                }
+
+                // Nếu không có dữ liệu từ API
+                if (rolesData.length === 0) {
+                    console.log("No roles data available");
+                    setRoles([]);
+                    setNoData(true);
+                } else {
+                    console.log("Processed roles data:", rolesData);
+                    setRoles(rolesData);
+                    setNoData(false);
+                }
+                setMeta(metaData);
             } else {
+                console.log("No data from roles API");
                 setRoles([]);
-                message.error("Lỗi khi tải danh sách role");
+                setNoData(true);
             }
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error fetching roles:", error);
             setRoles([]);
-            message.error("Lỗi khi tải danh sách role");
+            setNoData(true);
         } finally {
             setIsFetching(false);
         }
@@ -90,7 +172,7 @@ const RolePage = () => {
     const handleDeleteRole = async (id) => {
         if (id) {
             const res = await callDeleteRole(id);
-            if (res && +res.data.statusCode === 200) {
+            if (res && res.data) {
                 message.success("Xóa Role thành công");
                 FetchAllRoles(meta.page, meta.pageSize);
             } else {
@@ -113,6 +195,11 @@ const RolePage = () => {
             title: "Tên Role",
             dataIndex: "name",
             sorter: true,
+        },
+        {
+            title: "Mô tả",
+            dataIndex: "description",
+            ellipsis: true,
         },
         {
             title: "Trạng thái",
@@ -141,7 +228,7 @@ const RolePage = () => {
                     <EditOutlined
                         style={{ fontSize: 20, color: "#ffa500", cursor: "pointer" }}
                         onClick={() => {
-                            setDataInit(record);
+                            setSingleRole(record);
                             setOpenModal(true);
                         }}
                     />
@@ -162,6 +249,16 @@ const RolePage = () => {
 
     return (
         <div>
+            {noData && (
+                <Alert
+                    message="Không có dữ liệu"
+                    description="Hiện tại không có dữ liệu roles hoặc permissions. Vui lòng thử lại sau hoặc liên hệ quản trị viên."
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+            )}
+
             <Form
                 form={form}
                 layout="inline"
@@ -185,7 +282,7 @@ const RolePage = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => {
-                    setDataInit(null);
+                    setSingleRole(null);
                     setOpenModal(true);
                 }}
                 style={{ marginBottom: 16 }}
@@ -211,10 +308,10 @@ const RolePage = () => {
             <ModalRole
                 openModal={openModal}
                 setOpenModal={setOpenModal}
-                dataInit={dataInit}
-                setDataInit={setDataInit}
                 reloadTable={() => FetchAllRoles(meta.page, meta.pageSize)}
                 listPermissions={listPermissions}
+                singleRole={singleRole}
+                setSingleRole={setSingleRole}
             />
         </div>
     );

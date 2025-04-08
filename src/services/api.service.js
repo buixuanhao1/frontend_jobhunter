@@ -30,7 +30,7 @@ const updateUserAPI = (id, name, address, age, gender) => {
         age: age,
         gender: gender
     }
-    return axios.put(URL_BACKEND, data)
+    return axios.put(URL_BACKEND, data);
 }
 
 const deleteUserAPI = (id) => {
@@ -97,8 +97,8 @@ const callCreateCompany = (data) => {
 };
 
 const callUpdateCompany = (id, data) => {
-    const URL_BACKEND = `/api/v1/companies/${id}`;
-    return axios.put(URL_BACKEND, data);
+    const URL_BACKEND = "/api/v1/companies";
+    return axios.put(URL_BACKEND, { ...data, id: id });
 };
 
 const callUploadSingleFile = (file, folder) => {
@@ -119,8 +119,16 @@ const callCreateUser = (data) => {
 }
 
 const callUpdateUser = (id, data) => {
-    const URL_BACKEND = `/api/v1/users/${id}`;
-    return axios.put(URL_BACKEND, data);
+    const URL_BACKEND = "/api/v1/users";
+    const payload = {
+        id: id,
+        name: data.name || "",
+        email: data.email || "",
+        age: data.age || 16,
+        gender: data.gender || "MALE",
+        address: data.address || ""
+    }
+    return axios.put(URL_BACKEND, payload);
 }
 
 const callFetchUserById = (id) => {
@@ -139,8 +147,8 @@ const callCreateSkill = (data) => {
 };
 
 const callUpdateSkill = (id, data) => {
-    const URL_BACKEND = `/api/v1/skills/${id}`;
-    return axios.put(URL_BACKEND, data);
+    const URL_BACKEND = "/api/v1/skills";
+    return axios.put(URL_BACKEND, { ...data, id: id });
 };
 
 const callDeleteSkill = (id) => {
@@ -159,8 +167,8 @@ const callCreateJob = (data) => {
 };
 
 const callUpdateJob = (id, data) => {
-    const URL_BACKEND = `/api/v1/jobs/${id}`;
-    return axios.put(URL_BACKEND, data);
+    const URL_BACKEND = "/api/v1/jobs";
+    return axios.put(URL_BACKEND, { ...data, id: id });
 };
 
 const callDeleteJob = (id) => {
@@ -179,8 +187,8 @@ const callDeleteResume = (id) => {
 };
 
 const callUpdateResumeStatus = (id, status) => {
-    const URL_BACKEND = `/api/v1/resumes/${id}`;
-    return axios.patch(URL_BACKEND, { status });
+    const URL_BACKEND = "/api/v1/resumes";
+    return axios.put(URL_BACKEND, { id: id, status: status });
 };
 
 const callFetchResumeById = (id) => {
@@ -199,8 +207,8 @@ const callCreatePermission = (data) => {
 };
 
 const callUpdatePermission = (data, id) => {
-    const URL_BACKEND = `/api/v1/permissions/${id}`;
-    return axios.put(URL_BACKEND, data);
+    const URL_BACKEND = "/api/v1/permissions";
+    return axios.put(URL_BACKEND, { ...data, id: id });
 };
 
 const callDeletePermission = (id) => {
@@ -226,7 +234,6 @@ const callCreateRole = (data) => {
 };
 
 const callUpdateRole = (data) => {
-
     const URL_BACKEND = "/api/v1/roles";
     return axios.put(URL_BACKEND, data);
 };
@@ -262,6 +269,22 @@ const callFetchResumeByUser = () => {
     return axios.post(URL_BACKEND);
 }
 
+// Subscriber APIs
+const callCreateSubscriber = (data) => {
+    const URL_BACKEND = "/api/v1/subscribers";
+    return axios.post(URL_BACKEND, data);
+};
+
+const callGetSubscriberSkills = () => {
+    const URL_BACKEND = "/api/v1/subscribers/skills";
+    return axios.get(URL_BACKEND);
+};
+
+const callUpdateSubscriber = (data) => {
+    const URL_BACKEND = "/api/v1/subscribers";
+    return axios.put(URL_BACKEND, data);
+};
+
 export {
     deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
     loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI, callCreateCompany, callUpdateCompany, callUploadSingleFile,
@@ -275,5 +298,9 @@ export {
     // Permission APIs
     fetchAllPermissionAPI, callCreatePermission, callUpdatePermission, callDeletePermission, callFetchPermissionById,
     // Role APIs
-    fetchAllRoleAPI, callCreateRole, callUpdateRole, callDeleteRole, callFetchRoleById
+    fetchAllRoleAPI, callCreateRole, callUpdateRole, callDeleteRole, callFetchRoleById,
+    // Subscriber APIs
+    callCreateSubscriber,
+    callGetSubscriberSkills,
+    callUpdateSubscriber
 };

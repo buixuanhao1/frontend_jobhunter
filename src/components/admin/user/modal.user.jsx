@@ -1,5 +1,5 @@
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, message, Upload, ConfigProvider, Select } from "antd";
+import { Modal, Form, Input, message, Upload, ConfigProvider, Select, InputNumber } from "antd";
 import { useState } from "react";
 import { callCreateUser, callUpdateUser, callUploadSingleFile } from "../../../services/api.service";
 import enUS from 'antd/lib/locale/en_US';
@@ -83,8 +83,8 @@ const ModalUser = ({ openModal, setOpenModal, dataInit, setDataInit, reloadTable
             <Form
                 form={form}
                 onFinish={handleSubmit}
-                initialValues={dataInit}
                 layout="vertical"
+                initialValues={dataInit}
             >
                 <Form.Item
                     label="Tên hiển thị"
@@ -103,6 +103,29 @@ const ModalUser = ({ openModal, setOpenModal, dataInit, setDataInit, reloadTable
                     ]}
                 >
                     <Input disabled={dataInit?.id} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Tuổi"
+                    name="age"
+                    rules={[
+                        { required: true, message: "Vui lòng nhập tuổi" },
+                        { type: 'number', min: 16, message: "Tuổi phải lớn hơn hoặc bằng 16" }
+                    ]}
+                >
+                    <InputNumber min={16} style={{ width: '100%' }} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Giới tính"
+                    name="gender"
+                    rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                >
+                    <Select>
+                        <Select.Option value="MALE">Nam</Select.Option>
+                        <Select.Option value="FEMALE">Nữ</Select.Option>
+                        <Select.Option value="OTHER">Khác</Select.Option>
+                    </Select>
                 </Form.Item>
 
                 {!dataInit?.id && (

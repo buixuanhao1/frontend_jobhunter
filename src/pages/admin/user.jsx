@@ -174,7 +174,10 @@ const UserTable = () => {
                     <EditOutlined
                         style={{ fontSize: 20, color: "#ffa500", cursor: "pointer" }}
                         onClick={() => {
-                            setDataInit(record);
+                            setDataInit({
+                                ...record,
+                                _id: record.id // Ensure we have _id for update
+                            });
                             setOpenModal(true);
                         }}
                     />
