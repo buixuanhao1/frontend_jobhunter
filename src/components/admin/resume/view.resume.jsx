@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge, Button, Descriptions, Drawer, Form, Select, message, notification } from "antd";
+import { Badge, Button, Descriptions, Drawer, Form, Select, message, notification, Space } from "antd";
 import dayjs from 'dayjs';
 import { callUpdateResumeStatus } from "../../../services/api.service";
 
@@ -53,9 +53,19 @@ const ViewDetailResume = (props) => {
             maskClosable={false}
             destroyOnClose
             extra={
-                <Button loading={isSubmit} type="primary" onClick={handleChangeStatus}>
-                    Cập nhật trạng thái
-                </Button>
+                <Space>
+                    {dataInit?.url && (
+                        <Button
+                            type="primary"
+                            onClick={() => window.open(`${import.meta.env.VITE_BACKEND_URL}/storage/resume/${dataInit.url}`, '_blank')}
+                        >
+                            Xem CV
+                        </Button>
+                    )}
+                    <Button loading={isSubmit} type="primary" onClick={handleChangeStatus}>
+                        Cập nhật trạng thái
+                    </Button>
+                </Space>
             }
         >
             <Descriptions title="" bordered column={2} layout="vertical">

@@ -17,16 +17,23 @@ const Header = () => {
     };
 
     const handleLogout = async () => {
-        const res = await logoutUserAPI();
-        if (res.data.statusCode === 200) {
-            localStorage.removeItem("access_token");
-            setUser({
-                email: "",
-                name: "",
-                id: ""
-            });
-            notification.success({ message: "Logout success!" });
-            navigate("/");
+        try {
+            const res = await logoutUserAPI();
+            if (res && res.statusCode === 200) {
+                localStorage.removeItem("access_token");
+                setUser({
+                    email: "",
+                    name: "",
+                    id: ""
+                });
+                notification.success({ message: "Đăng xuất thành công!" });
+                navigate("/");
+            } else {
+                notification.error({ message: "Đăng xuất thất bại!" });
+            }
+        } catch (error) {
+            console.error("Error during logout:", error);
+            notification.error({ message: "Có lỗi xảy ra khi đăng xuất!" });
         }
     }
 

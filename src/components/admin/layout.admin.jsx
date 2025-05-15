@@ -14,6 +14,17 @@ const LayoutAdmin = () => {
 
     useEffect(() => {
         const fetchAccount = async () => {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                setUser({
+                    email: "",
+                    name: "",
+                    id: ""
+                });
+                navigate('/login');
+                return;
+            }
+
             try {
                 const res = await getAccount();
                 if (res.data) {
@@ -22,6 +33,12 @@ const LayoutAdmin = () => {
             } catch (error) {
                 console.error("Error fetching account:", error);
                 if (error.response && error.response.status === 401) {
+                    localStorage.removeItem("access_token");
+                    setUser({
+                        email: "",
+                        name: "",
+                        id: ""
+                    });
                     navigate('/login');
                 }
             }
@@ -30,19 +47,81 @@ const LayoutAdmin = () => {
         fetchAccount();
     }, []);
 
+    const hasPermission = (module) => {
+        console.log('Checking permission for module:', module);
+        console.log('Current user:', user);
+        console.log('User role:', user?.role);
+        console.log('User permissions:', user?.role?.permissions);
+
+        if (!user || !user.role || !user.role.permissions) {
+            console.log('No user, role or permissions found');
+            return false;
+        }
+
+        // Kiểm tra xem có permission nào có module trùng với module được truyền vào không
+        const hasModulePermission = user.role.permissions.some(permission => {
+            console.log('Checking permission:', permission);
+            return permission.module === module;
+        });
+
+        console.log('Has permission:', hasModulePermission);
+        return hasModulePermission;
+    };
+
     const menuItems = [
-        { label: <Link to='/admin'>Dashboard</Link>, key: '/admin', icon: <AppstoreOutlined /> },
-        { label: <Link to='/admin/company'>Company</Link>, key: '/admin/company', icon: <BankOutlined /> },
-        { label: <Link to='/admin/user'>User</Link>, key: '/admin/user', icon: <UserOutlined /> },
-        { label: <Link to='/admin/job'>Job</Link>, key: '/admin/job', icon: <ScheduleOutlined /> },
-        { label: <Link to='/admin/resume'>Resume</Link>, key: '/admin/resume', icon: <AliwangwangOutlined /> },
-        { label: <Link to='/admin/permission'>Permission</Link>, key: '/admin/permission', icon: <ApiOutlined /> },
-        { label: <Link to='/admin/role'>Role</Link>, key: '/admin/role', icon: <ExceptionOutlined /> },
-    ];
+        {
+            label: <Link to='/admin'>Dashboard</Link>,
+            key: '/admin',
+            icon: <AppstoreOutlined />,
+            show: true // Dashboard luôn hiển thị
+        },
+        {
+            label: <Link to='/admin/company'>Company</Link>,
+            key: '/admin/company',
+            icon: <BankOutlined />,
+            show: hasPermission('COMPANIES')
+        },
+        {
+            label: <Link to='/admin/user'>User</Link>,
+            key: '/admin/user',
+            icon: <UserOutlined />,
+            show: hasPermission('USERS')
+        },
+        {
+            label: <Link to='/admin/job'>Job</Link>,
+            key: '/admin/job',
+            icon: <ScheduleOutlined />,
+            show: hasPermission('JOBS')
+        },
+        {
+            label: <Link to='/admin/resume'>Resume</Link>,
+            key: '/admin/resume',
+            icon: <AliwangwangOutlined />,
+            show: hasPermission('RESUMES')
+        },
+        {
+            label: <Link to='/admin/permission'>Permission</Link>,
+            key: '/admin/permission',
+            icon: <ApiOutlined />,
+            show: hasPermission('PERMISSIONS')
+        },
+        {
+            label: <Link to='/admin/role'>Role</Link>,
+            key: '/admin/role',
+            icon: <ExceptionOutlined />,
+            show: hasPermission('ROLES')
+        },
+    ].filter(item => item.show);
 
     const handleLogout = async () => {
         const res = await logoutUserAPI();
         if (res && +res.statusCode === 200) {
+            localStorage.removeItem("access_token");
+            setUser({
+                email: "",
+                name: "",
+                id: ""
+            });
             message.success('Đăng xuất thành công');
             navigate('/');
         }

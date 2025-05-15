@@ -86,7 +86,7 @@ const CompanyTable = () => {
     const handleDeleteCompany = async (id) => {
         if (id) {
             const res = await deleteCompanyAPI(id);
-            if (res && +res.data.statusCode === 202) {
+            if (res && res.statusCode === 202) {
                 message.success("Xóa Company thành công");
                 FetchAllCompanies(meta.page, meta.pageSize);
             } else {

@@ -1,201 +1,178 @@
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, message, Upload, ConfigProvider, Select, InputNumber } from "antd";
-import { useState } from "react";
-import { callCreateUser, callUpdateUser, callUploadSingleFile } from "../../../services/api.service";
-import enUS from 'antd/lib/locale/en_US';
+import { ModalForm, ProFormText, ProFormDigit, ProFormSelect, ProFormTextArea } from "@ant-design/pro-components";
+import { Col, Row, Form, message, notification } from "antd";
+import { useEffect, useState } from "react";
+import { callCreateUser, callUpdateUser, fetchAllRoleAPI } from "../../../services/api.service";
+import { isMobile } from "react-device-detect";
 
 const ModalUser = ({ openModal, setOpenModal, dataInit, setDataInit, reloadTable }) => {
     const [form] = Form.useForm();
-    const [loadingUpload, setLoadingUpload] = useState(false);
-    const [dataAvatar, setDataAvatar] = useState([]);
 
-    const handleSubmit = async (values) => {
-        if (!dataAvatar.length && !dataInit?.id) {
-            message.error("Vui lòng upload ảnh Avatar");
-            return;
+    useEffect(() => {
+        if (dataInit?.id) {
+            form.setFieldsValue(dataInit);
         }
-
-        const payload = dataAvatar.length > 0 ?
-            { ...values, avatar: dataAvatar[0].name } :
-            { ...values };
-
-        const res = dataInit?.id
-            ? await callUpdateUser(dataInit.id, payload)
-            : await callCreateUser(payload);
-
-        if (res.data) {
-            message.success(dataInit?.id ? "Cập nhật thành công" : "Thêm mới thành công");
-            handleReset();
-            reloadTable();
-        } else {
-            message.error(res.message || "Có lỗi xảy ra");
-        }
-    };
+    }, [dataInit]);
 
     const handleReset = () => {
         form.resetFields();
-        setDataAvatar([]);
         setDataInit(null);
         setOpenModal(false);
     };
 
-    const handleUploadFileAvatar = async ({ file, onSuccess, onError }) => {
-        setLoadingUpload(true);
+    const handleSubmit = async (values) => {
         try {
-            const res = await callUploadSingleFile(file, "user");
-            if (res?.data) {
-                setDataAvatar([{ name: res.data.fileName }]);
-                onSuccess?.("ok");
+            const payload = {
+                ...values,
+                role: {
+                    id: values.roleId
+                }
+            };
+            delete payload.roleId;
+
+            let res;
+            if (dataInit?.id) {
+                res = await callUpdateUser(dataInit.id, payload);
             } else {
-                onError?.(new Error(res.message));
+                res = await callCreateUser(payload);
             }
-        } catch (_) {
-            onError?.(new Error('Upload failed'));
-        } finally {
-            setLoadingUpload(false);
+
+            if (res?.data) {
+                message.success(dataInit?.id ? "Cập nhật thành công" : "Tạo mới thành công");
+                handleReset();
+                reloadTable();
+            } else {
+                notification.error({
+                    message: "Có lỗi xảy ra",
+                    description: res?.message || "Vui lòng thử lại",
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: "Lỗi",
+                description: "Không thể kết nối đến máy chủ",
+            });
         }
     };
 
-    const beforeUpload = (file) => {
-        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-        if (!isJpgOrPng) {
-            message.error('Chỉ chấp nhận file JPG/PNG!');
-            return false;
-        }
-        const isLt2M = file.size / 1024 / 1024 < 2;
-        if (!isLt2M) {
-            message.error('Kích thước file phải nhỏ hơn 2MB!');
-            return false;
-        }
-        return true;
-    };
 
     return (
-        <Modal
+        <ModalForm
             title={dataInit?.id ? "Cập nhật User" : "Tạo mới User"}
+            form={form}
             open={openModal}
-            onOk={() => form.submit()}
-            onCancel={handleReset}
-            okText="Lưu"
-            cancelText="Hủy"
-            width={600}
+            onFinish={handleSubmit}
+            modalProps={{
+                onCancel: handleReset,
+                afterClose: handleReset,
+                destroyOnClose: true,
+                width: isMobile ? "100%" : 900,
+                okText: dataInit?.id ? "Cập nhật" : "Tạo mới",
+                cancelText: "Hủy"
+            }}
+            initialValues={dataInit || {}}
         >
-            <Form
-                form={form}
-                onFinish={handleSubmit}
-                layout="vertical"
-                initialValues={dataInit}
-            >
-                <Form.Item
-                    label="Tên hiển thị"
-                    name="name"
-                    rules={[{ required: true, message: "Vui lòng nhập tên hiển thị" }]}
-                >
-                    <Input />
-                </Form.Item>
+            <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                    <ProFormText
+                        label="Tên hiển thị"
+                        name="name"
+                        placeholder="Nhập tên"
+                        rules={[{ required: true, message: "Vui lòng nhập tên" }]}
+                    />
+                </Col>
 
-                <Form.Item
-                    label="Email"
-                    name="email"
-                    rules={[
-                        { required: true, message: "Vui lòng nhập email" },
-                        { type: 'email', message: "Email không hợp lệ" }
-                    ]}
-                >
-                    <Input disabled={dataInit?.id} />
-                </Form.Item>
-
-                <Form.Item
-                    label="Tuổi"
-                    name="age"
-                    rules={[
-                        { required: true, message: "Vui lòng nhập tuổi" },
-                        { type: 'number', min: 16, message: "Tuổi phải lớn hơn hoặc bằng 16" }
-                    ]}
-                >
-                    <InputNumber min={16} style={{ width: '100%' }} />
-                </Form.Item>
-
-                <Form.Item
-                    label="Giới tính"
-                    name="gender"
-                    rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-                >
-                    <Select>
-                        <Select.Option value="MALE">Nam</Select.Option>
-                        <Select.Option value="FEMALE">Nữ</Select.Option>
-                        <Select.Option value="OTHER">Khác</Select.Option>
-                    </Select>
-                </Form.Item>
-
-                {!dataInit?.id && (
-                    <Form.Item
-                        label="Mật khẩu"
-                        name="password"
+                <Col xs={24} sm={12}>
+                    <ProFormText
+                        label="Email"
+                        name="email"
+                        placeholder="Nhập email"
+                        disabled={!!dataInit?.id}
                         rules={[
-                            { required: true, message: "Vui lòng nhập mật khẩu" },
-                            { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" }
-                        ]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                )}
-
-                <Form.Item
-                    label="Số điện thoại"
-                    name="phone"
-                    rules={[
-                        { required: true, message: "Vui lòng nhập số điện thoại" },
-                        { pattern: /^[0-9]+$/, message: "Số điện thoại không hợp lệ" }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    label="Role"
-                    name="role"
-                    rules={[{ required: true, message: "Vui lòng chọn role" }]}
-                >
-                    <Select
-                        options={[
-                            { label: "Admin", value: "ADMIN" },
-                            { label: "User", value: "USER" },
-                            { label: "HR", value: "HR" }
+                            { required: true, message: "Vui lòng nhập email" },
+                            { type: "email", message: "Email không hợp lệ" }
                         ]}
                     />
-                </Form.Item>
+                </Col>
 
-                <Form.Item
-                    label="Avatar"
-                    required={!dataInit?.id}
-                >
-                    <ConfigProvider locale={enUS}>
-                        <Upload
-                            listType="picture-card"
-                            maxCount={1}
-                            customRequest={handleUploadFileAvatar}
-                            beforeUpload={beforeUpload}
-                            defaultFileList={dataInit?.avatar ? [{
-                                uid: '-1',
-                                name: dataInit.avatar,
-                                status: 'done',
-                                url: `${import.meta.env.VITE_BACKEND_URL}/storage/user/${dataInit.avatar}`
-                            }] : []}
-                        >
-                            {loadingUpload ? <LoadingOutlined /> : <PlusOutlined />}
-                        </Upload>
-                    </ConfigProvider>
-                </Form.Item>
+                {!dataInit?.id && (
+                    <Col xs={24} sm={12}>
+                        <ProFormText.Password
+                            label="Mật khẩu"
+                            name="password"
+                            placeholder="Nhập mật khẩu"
+                            rules={[
+                                { required: true, message: "Vui lòng nhập mật khẩu" },
+                                { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" }
+                            ]}
+                        />
+                    </Col>
+                )}
 
-                <Form.Item
-                    label="Địa chỉ"
-                    name="address"
-                >
-                    <Input.TextArea />
-                </Form.Item>
-            </Form>
-        </Modal>
+                <Col xs={24} sm={12}>
+                    <ProFormDigit
+                        label="Tuổi"
+                        name="age"
+                        min={16}
+                        placeholder="Nhập tuổi"
+                        rules={[{ required: true, message: "Vui lòng nhập tuổi" }]}
+                    />
+                </Col>
+
+                <Col xs={24} sm={12}>
+                    <ProFormText
+                        label="Số điện thoại"
+                        name="phone"
+                        placeholder="Nhập số điện thoại"
+                        rules={[
+                            { required: true, message: "Vui lòng nhập số điện thoại" },
+                            { pattern: /^[0-9]+$/, message: "Chỉ nhập số" }
+                        ]}
+                    />
+                </Col>
+
+                <Col xs={24} sm={12}>
+                    <ProFormSelect
+                        label="Giới tính"
+                        name="gender"
+                        valueEnum={{
+                            MALE: "Nam",
+                            FEMALE: "Nữ",
+                            OTHER: "Khác"
+                        }}
+                        placeholder="Chọn giới tính"
+                        rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                    />
+                </Col>
+
+                <Col xs={24} sm={12}>
+                    <ProFormSelect
+                        label="Role"
+                        name="roleId"
+                        request={async () => {
+                            // Giả sử bạn có API lấy danh sách role
+                            const res = await fetchAllRoleAPI(); // [{ id: 1, name: "ADMIN" },...]
+                            return res.data.result.map(role => ({
+                                label: role.name,
+                                value: role.id
+                            }));
+                        }}
+                        placeholder="Chọn role"
+                        rules={[{ required: true, message: "Vui lòng chọn role" }]}
+                    />
+
+                </Col>
+
+                <Col xs={24}>
+                    <ProFormTextArea
+                        label="Địa chỉ"
+                        name="address"
+                        placeholder="Nhập địa chỉ"
+                        allowClear
+                        autoSize={{ minRows: 2, maxRows: 4 }}
+                    />
+                </Col>
+            </Row>
+        </ModalForm>
     );
 };
 

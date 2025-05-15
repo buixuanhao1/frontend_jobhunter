@@ -159,6 +159,18 @@ const ResumePage = () => {
             render: (text) => text ? dayjs(text).format('DD-MM-YYYY HH:mm:ss') : "",
         },
         {
+            title: "CV",
+            dataIndex: "url",
+            render: (url) => url ? (
+                <a
+                    href={`${import.meta.env.VITE_BACKEND_URL}/storage/resume/${url}`}
+                    target="_blank"
+                >
+                    Xem CV
+                </a>
+            ) : "Không có CV"
+        },
+        {
             title: "Actions",
             key: "actions",
             render: (_, record) => (
