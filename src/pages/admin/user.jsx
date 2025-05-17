@@ -98,7 +98,8 @@ const UserTable = () => {
     const handleDeleteUser = async (id) => {
         if (id) {
             const res = await deleteUserAPI(id);
-            if (res && +res.statusCode === 202) {
+            console.log(res);
+            if (res.statusCode === 200) {
                 message.success("Xóa người dùng thành công");
                 FetchAllUsers(meta.page, meta.pageSize);
             } else {

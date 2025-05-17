@@ -7,19 +7,18 @@
 
 .detail-job-section {
     background: #f9f9f9;
-    padding: 30px;
+    padding: 20px;
     border-radius: 8px;
 }
 
 .header {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
     color: #333;
     margin-bottom: 10px;
 }
 
 .location {
-    font-size: 16px;
     color: #666;
     margin-bottom: 20px;
 }
@@ -66,4 +65,39 @@
     .container {
         padding: 10px;
     }
+}
+
+.company-jobs-section {
+    margin-top: 30px;
+}
+
+.company-jobs-section h2 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.card-job-content {
+    display: flex;
+    gap: 15px;
+}
+
+.card-job-left img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.card-job-right {
+    flex: 1;
+}
+
+.job-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.job-location {
+    color: #666;
+    margin-bottom: 5px;
 }

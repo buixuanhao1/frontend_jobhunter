@@ -89,7 +89,7 @@ const JobPage = () => {
     const handleDeleteJob = async (id) => {
         if (id) {
             const res = await callDeleteJob(id);
-            if (res && +res.data.statusCode === 202) {
+            if (res && +res.statusCode === 200) {
                 message.success("Xóa Job thành công");
                 FetchAllJobs(meta.page, meta.pageSize);
             } else {

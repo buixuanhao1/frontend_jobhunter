@@ -58,6 +58,11 @@ const fetchAllJobAPI = (query) => {
     return axios.get(URL_BACKEND)
 }
 
+const fetchJobsByCompanyAPI = (companyId) => {
+    const URL_BACKEND = `/api/v1/companies/jobs/${companyId}`;
+    return axios.get(URL_BACKEND)
+}
+
 const callFetchJobById = (id) => {
     const URL_BACKEND = `/api/v1/jobs/${id}`;
     return axios.get(URL_BACKEND)
@@ -285,6 +290,8 @@ const callUpdateSubscriber = (data) => {
     return axios.put(URL_BACKEND, data);
 };
 
+
+
 export {
     deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
     loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI, callCreateCompany, callUpdateCompany, callUploadSingleFile,
@@ -292,7 +299,7 @@ export {
     // Skill APIs
     fetchAllSkillAPI, callCreateSkill, callUpdateSkill, callDeleteSkill, callFetchSkillById,
     // Job APIs
-    callCreateJob, callUpdateJob, callDeleteJob,
+    callCreateJob, callUpdateJob, callDeleteJob, fetchJobsByCompanyAPI,
     // Resume APIs
     fetchAllResumeAPI, callDeleteResume, callUpdateResumeStatus, callFetchResumeById, callCreateResume, callFetchResumeByUser,
     // Permission APIs

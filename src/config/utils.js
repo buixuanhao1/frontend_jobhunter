@@ -62,3 +62,11 @@ export const buildQuery = (page, pageSize, filters, additionalParams = {}) => {
 
     return query;
 };
+
+export const LOCATION_LIST = [
+    { label: "ALL", value: "ALL" },
+    { label: "Hà Nội", value: "HANOI" },
+    { label: "Hồ Chí Minh", value: "HOCHIMINH" },
+    { label: "Đà Nẵng", value: "DANANG" },
+    { label: "Others", value: "OTHER" }
+];
