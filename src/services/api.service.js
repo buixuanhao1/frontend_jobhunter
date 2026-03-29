@@ -274,6 +274,23 @@ const callFetchResumeByUser = () => {
     return axios.post(URL_BACKEND);
 }
 
+// Chat APIs
+const fetchChatHistoryAPI = (partnerId) => {
+    return axios.get(`/api/v1/chats/${partnerId}`);
+};
+
+const fetchChatPartnersAPI = () => {
+    return axios.get(`/api/v1/chats/partners`);
+};
+
+const fetchUsersForChatAPI = () => {
+    return axios.get(`/api/v1/chats/users`);
+};
+
+const fetchHRByCompanyAPI = (companyId) => {
+    return axios.get(`/api/v1/chats/hr/company/${companyId}`);
+};
+
 // Subscriber APIs
 const callCreateSubscriber = (data) => {
     const URL_BACKEND = "/api/v1/subscribers";
@@ -309,5 +326,10 @@ export {
     // Subscriber APIs
     callCreateSubscriber,
     callGetSubscriberSkills,
-    callUpdateSubscriber
+    callUpdateSubscriber,
+    // Chat APIs
+    fetchChatHistoryAPI,
+    fetchChatPartnersAPI,
+    fetchUsersForChatAPI,
+    fetchHRByCompanyAPI
 };

@@ -12,9 +12,10 @@ export const AuthWrapper = (props) => {
         name: "",
         id: ""
     });
+    const [chatTarget, setChatTarget] = useState(null); // user muốn mở chat ngay
 
     return (
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ user, setUser, chatTarget, setChatTarget }}>
             {props.children}
         </AuthContext.Provider>
     )

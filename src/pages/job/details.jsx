@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Col, Divider, Row, Skeleton, Tag } from "antd";
-import { DollarOutlined, EnvironmentOutlined, HistoryOutlined } from "@ant-design/icons";
+import React, { useContext, useEffect, useState } from "react";
+import { Col, Divider, Row, Skeleton, Tag, message } from "antd";
+import { DollarOutlined, EnvironmentOutlined, HistoryOutlined, MessageOutlined } from "@ant-design/icons";
 import parse from "html-react-parser";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import ApplyModal from "../../components/client/modal/apply.modal";
-import { callFetchJobById } from "../../services/api.service";
+import { callFetchJobById, fetchHRByCompanyAPI } from "../../services/api.service";
 import styles from "../../styles/client.module.scss";
 import { useParams } from "react-router-dom";
+import { AuthContext } from "../../components/context/auth.context";
 
 dayjs.extend(relativeTime);
 
@@ -15,8 +16,9 @@ const ClientJobDetailPage = () => {
     const [jobDetail, setJobDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { user, setChatTarget } = useContext(AuthContext);
 
-    const { id } = useParams();  // ✅ Lấy id từ URL path
+    const { id } = useParams();
 
 
 
@@ -41,6 +43,20 @@ const ClientJobDetailPage = () => {
         fetchJobDetail();
     }, [id]);
 
+    const handleContactHR = async () => {
+        if (!jobDetail?.company?.id) return;
+        try {
+            const res = await fetchHRByCompanyAPI(jobDetail.company.id);
+            if (res?.data?.length > 0) {
+                setChatTarget(res.data[0]); // mở chat với HR đầu tiên của công ty
+            } else {
+                message.info("Công ty này chưa có HR để liên hệ.");
+            }
+        } catch {
+            message.error("Không thể kết nối HR lúc này.");
+        }
+    };
+
     return (
         <div className={`${styles["container"]} ${styles["detail-job-section"]}`}>
             {isLoading ? (
@@ -51,9 +67,20 @@ const ClientJobDetailPage = () => {
                         <>
                             <Col span={24} md={16}>
                                 <div className="header">{jobDetail.name}</div>
-                                <button onClick={() => setIsModalOpen(true)} className="btn-apply">
-                                    Apply Now
-                                </button>
+                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+                                    <button onClick={() => setIsModalOpen(true)} className="btn-apply">
+                                        Apply Now
+                                    </button>
+                                    {user?.role?.name === "USER" && (
+                                        <button
+                                            onClick={handleContactHR}
+                                            className="btn-apply"
+                                            style={{ background: "#52c41a", display: "flex", alignItems: "center", gap: 6 }}
+                                        >
+                                            <MessageOutlined /> Liên hệ HR
+                                        </button>
+                                    )}
+                                </div>
                                 <Divider />
                                 <div className="skills">
                                     {jobDetail.skills?.map((item, index) => (
