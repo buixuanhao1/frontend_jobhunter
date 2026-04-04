@@ -1,0 +1,256 @@
+.job-detail-page {
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 32px 0 64px;
+}
+
+.job-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── Hero Card ───────────────────────────────── */
+.jd-hero-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.jd-company-logo {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    border: 1px solid #f0f0f0;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.jd-company-logo img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+}
+
+.jd-hero-info { flex: 1; min-width: 0; }
+
+.jd-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0 0 6px;
+    line-height: 1.3;
+}
+
+.jd-company-name {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.jd-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.jd-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.jd-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6b7280;
+}
+.jd-meta-item.salary {
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.jd-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Buttons */
+.jd-btn-apply {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #1677ff, #0958d9);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 4px 14px rgba(22,119,255,.4);
+}
+.jd-btn-apply:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(22,119,255,.5);
+}
+.jd-btn-apply.full {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.jd-btn-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #52c41a, #389e0d);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 4px 14px rgba(82,196,26,.35);
+}
+.jd-btn-contact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(82,196,26,.45);
+}
+
+.jd-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all .2s;
+}
+.jd-btn-save:hover,
+.jd-btn-save.saved {
+    color: #ff4d4f;
+    border-color: #ff4d4f;
+    background: #fff1f0;
+}
+
+/* ── Description Card ────────────────────────── */
+.jd-section-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.jd-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+.jd-description {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #374151;
+}
+.jd-description h2 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 20px 0 10px; }
+.jd-description ul { padding-left: 1.5rem; }
+.jd-description li { margin-bottom: 4px; }
+.jd-description p  { margin-bottom: 12px; }
+
+/* ── Company Card (right) ────────────────────── */
+.jd-company-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.jd-company-card:hover {
+    border-color: #1677ff;
+    box-shadow: 0 8px 28px rgba(22,119,255,.12);
+}
+.jd-company-card-logo {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 12px;
+}
+.jd-company-card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+}
+.jd-company-card-link {
+    font-size: 13px;
+    color: #1677ff;
+    font-weight: 500;
+}
+
+/* ── Overview Card (right) ───────────────────── */
+.jd-overview-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.jd-overview-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 16px;
+}
+.jd-overview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 8px;
+}
+.jd-overview-row:last-of-type { border-bottom: none; }
+.jd-ov-label { font-size: 13px; color: #9ca3af; font-weight: 500; }
+.jd-ov-val   { font-size: 13px; color: #374151; font-weight: 600; text-align: right; }
+.jd-ov-val.salary { color: #16a34a; font-size: 14px; }
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 768px) {
+    .jd-hero-card { flex-direction: column; }
+    .job-detail-page { padding: 16px 0 48px; }
+    .jd-title { font-size: 18px; }
+}

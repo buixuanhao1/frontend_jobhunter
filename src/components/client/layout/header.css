@@ -1,0 +1,104 @@
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.header-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+/* Logo */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.logo-icon { font-size: 24px; }
+.logo-text {
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1677ff, #0958d9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+/* Nav */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.nav-link:hover {
+    background: #f0f5ff;
+    color: #1677ff;
+}
+.nav-link-active {
+    background: #e6f4ff;
+    color: #1677ff;
+    font-weight: 600;
+}
+
+/* Right actions */
+.header-actions {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px 10px 4px 4px;
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+    background: #fff;
+}
+.user-trigger:hover {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+.user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Mobile hide nav text */
+@media (max-width: 768px) {
+    .nav-link span { display: none; }
+    .header-nav { gap: 2px; }
+    .nav-link { padding: 8px; }
+    .logo-text { display: none; }
+    .header-inner { gap: 12px; }
+}

@@ -1,160 +1,185 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Layout, Menu, Button, message, Dropdown, Space, Avatar } from 'antd';
-import { Outlet, Link, useNavigate } from "react-router-dom";
-import { MenuFoldOutlined, MenuUnfoldOutlined, BugOutlined, AppstoreOutlined, UserOutlined, ScheduleOutlined, AliwangwangOutlined, ApiOutlined, ExceptionOutlined, BankOutlined } from '@ant-design/icons';
+import { Layout, Menu, Button, message, Dropdown, Avatar, Badge, Typography } from 'antd';
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import {
+    MenuFoldOutlined, MenuUnfoldOutlined, AppstoreOutlined,
+    UserOutlined, ScheduleOutlined, AliwangwangOutlined,
+    ApiOutlined, ExceptionOutlined, BankOutlined,
+    HomeOutlined, LogoutOutlined, SettingOutlined,
+    BellOutlined
+} from '@ant-design/icons';
 import { logoutUserAPI, getAccount } from '../../services/api.service';
 import { AuthContext } from '../context/auth.context';
+import './layout.admin.css';
 
-const { Content, Sider } = Layout;
+const { Sider, Content, Header } = Layout;
+const { Text } = Typography;
+
+const NAV_GROUPS = [
+    {
+        label: 'Tổng quan',
+        items: [
+            { key: '/admin', icon: <AppstoreOutlined />, label: 'Dashboard', module: null },
+        ]
+    },
+    {
+        label: 'Quản lý',
+        items: [
+            { key: '/admin/user',    icon: <UserOutlined />,         label: 'Người dùng',   module: 'USERS' },
+            { key: '/admin/company', icon: <BankOutlined />,         label: 'Công ty',       module: 'COMPANIES' },
+            { key: '/admin/job',     icon: <ScheduleOutlined />,     label: 'Việc làm',      module: 'JOBS' },
+            { key: '/admin/resume',  icon: <AliwangwangOutlined />,  label: 'Đơn ứng tuyển', module: 'RESUMES' },
+        ]
+    },
+    {
+        label: 'Hệ thống',
+        items: [
+            { key: '/admin/permission', icon: <ApiOutlined />,       label: 'Quyền hạn',    module: 'PERMISSIONS' },
+            { key: '/admin/role',       icon: <ExceptionOutlined />, label: 'Vai trò',       module: 'ROLES' },
+        ]
+    },
+];
 
 const LayoutAdmin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, setUser } = useContext(AuthContext);
 
     useEffect(() => {
         const fetchAccount = async () => {
             const token = localStorage.getItem("access_token");
-            if (!token) {
-                setUser({
-                    email: "",
-                    name: "",
-                    id: ""
-                });
-                navigate('/login');
-                return;
-            }
-
+            if (!token) { setUser({ email: "", name: "", id: "" }); navigate('/login'); return; }
             try {
                 const res = await getAccount();
-                if (res.data) {
-                    setUser(res.data.user);
-                }
+                if (res.data) setUser(res.data.user);
             } catch (error) {
-                console.error("Error fetching account:", error);
-                if (error.response && error.response.status === 401) {
+                if (error.response?.status === 401) {
                     localStorage.removeItem("access_token");
-                    setUser({
-                        email: "",
-                        name: "",
-                        id: ""
-                    });
+                    setUser({ email: "", name: "", id: "" });
                     navigate('/login');
                 }
             }
         };
-
         fetchAccount();
     }, []);
 
-    const hasPermission = (module) => {
-        console.log('Checking permission for module:', module);
-        console.log('Current user:', user);
-        console.log('User role:', user?.role);
-        console.log('User permissions:', user?.role?.permissions);
-
-        if (!user || !user.role || !user.role.permissions) {
-            console.log('No user, role or permissions found');
-            return false;
+    useEffect(() => {
+        if (!user?.id) return;
+        const role = user?.role?.name;
+        if (role && role !== "SUPER_ADMIN") {
+            if (role === "HR") navigate("/hr");
+            else navigate("/my");
         }
+    }, [user?.id, user?.role?.name]);
 
-        // Kiểm tra xem có permission nào có module trùng với module được truyền vào không
-        const hasModulePermission = user.role.permissions.some(permission => {
-            console.log('Checking permission:', permission);
-            return permission.module === module;
-        });
-
-        console.log('Has permission:', hasModulePermission);
-        return hasModulePermission;
+    const hasPerm = (module) => {
+        if (!module) return true; // Dashboard always visible
+        return user?.role?.permissions?.some(p => p.module === module) ?? false;
     };
-
-    const menuItems = [
-        {
-            label: <Link to='/admin'>Dashboard</Link>,
-            key: '/admin',
-            icon: <AppstoreOutlined />,
-            show: true // Dashboard luôn hiển thị
-        },
-        {
-            label: <Link to='/admin/company'>Company</Link>,
-            key: '/admin/company',
-            icon: <BankOutlined />,
-            show: hasPermission('COMPANIES')
-        },
-        {
-            label: <Link to='/admin/user'>User</Link>,
-            key: '/admin/user',
-            icon: <UserOutlined />,
-            show: hasPermission('USERS')
-        },
-        {
-            label: <Link to='/admin/job'>Job</Link>,
-            key: '/admin/job',
-            icon: <ScheduleOutlined />,
-            show: hasPermission('JOBS')
-        },
-        {
-            label: <Link to='/admin/resume'>Resume</Link>,
-            key: '/admin/resume',
-            icon: <AliwangwangOutlined />,
-            show: hasPermission('RESUMES')
-        },
-        {
-            label: <Link to='/admin/permission'>Permission</Link>,
-            key: '/admin/permission',
-            icon: <ApiOutlined />,
-            show: hasPermission('PERMISSIONS')
-        },
-        {
-            label: <Link to='/admin/role'>Role</Link>,
-            key: '/admin/role',
-            icon: <ExceptionOutlined />,
-            show: hasPermission('ROLES')
-        },
-    ].filter(item => item.show);
 
     const handleLogout = async () => {
-        const res = await logoutUserAPI();
-        if (res && +res.statusCode === 200) {
-            localStorage.removeItem("access_token");
-            setUser({
-                email: "",
-                name: "",
-                id: ""
-            });
-            message.success('Đăng xuất thành công');
-            navigate('/');
-        }
+        await logoutUserAPI();
+        localStorage.removeItem("access_token");
+        setUser({ email: "", name: "", id: "" });
+        message.success('Đăng xuất thành công');
+        navigate('/');
     };
 
-    const itemsDropdown = [
-        { label: <Link to={'/'}>Trang chủ</Link>, key: 'home' },
-        { label: <label style={{ cursor: 'pointer' }} onClick={() => handleLogout()}>Đăng xuất</label>, key: 'logout' },
+    const userMenuItems = [
+        { key: 'home', icon: <HomeOutlined />, label: <Link to="/">Về trang chủ</Link> },
+        { type: 'divider' },
+        { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: handleLogout },
     ];
 
+    // Build flat menu items with group labels
+    const menuItems = NAV_GROUPS.map(group => ({
+        key: group.label,
+        type: 'group',
+        label: collapsed ? null : group.label,
+        children: group.items
+            .filter(item => hasPerm(item.module))
+            .map(item => ({
+                key: item.key,
+                icon: item.icon,
+                label: <Link to={item.key}>{item.label}</Link>,
+            }))
+    })).filter(g => g.children.length > 0);
+
+    const selectedKey = NAV_GROUPS.flatMap(g => g.items)
+        .find(item => item.key !== '/admin' && location.pathname.startsWith(item.key))?.key
+        || (location.pathname === '/admin' ? '/admin' : '');
+
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider theme='light' collapsible collapsed={collapsed} onCollapse={setCollapsed}>
-                <div style={{ height: 32, margin: 16, textAlign: 'center' }}>
-                    <BugOutlined /> ADMIN
+        <Layout className="admin-layout">
+            <Sider
+                className="admin-sider"
+                collapsed={collapsed}
+                onCollapse={setCollapsed}
+                width={240}
+                collapsedWidth={64}
+            >
+                {/* Logo */}
+                <div className={`admin-logo ${collapsed ? 'collapsed' : ''}`}>
+                    <div className="admin-logo-icon">⚡</div>
+                    {!collapsed && <span className="admin-logo-text">WorkHub Admin</span>}
                 </div>
-                <Menu mode="inline" items={menuItems} />
+
+                <Menu
+                    mode="inline"
+                    selectedKeys={[selectedKey]}
+                    items={menuItems}
+                    className="admin-menu"
+                />
+
+                {/* User card bottom */}
+                {!collapsed && (
+                    <div className="admin-sider-user">
+                        <Avatar
+                            size={34}
+                            style={{ background: "linear-gradient(135deg,#1677ff,#0958d9)", flexShrink: 0 }}
+                            icon={<UserOutlined />}
+                        />
+                        <div className="admin-sider-user-info">
+                            <div className="admin-sider-user-name">{user?.name}</div>
+                            <div className="admin-sider-user-role">Super Admin</div>
+                        </div>
+                    </div>
+                )}
             </Sider>
+
             <Layout>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: 10 }}>
+                <Header className="admin-header">
                     <Button
                         type="text"
+                        className="admin-collapse-btn"
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                         onClick={() => setCollapsed(!collapsed)}
                     />
-                    <Dropdown menu={{ items: itemsDropdown }} trigger={['click']}>
-                        <Space style={{ cursor: "pointer" }}>
-                            Welcome {user?.name}
-                            <Avatar> {user?.name?.substring(0, 2)?.toUpperCase()} </Avatar>
-                        </Space>
-                    </Dropdown>
-                </div>
-                <Content style={{ padding: '15px' }}>
+
+                    {/* Breadcrumb-like page title */}
+                    <div className="admin-header-title">
+                        {NAV_GROUPS.flatMap(g => g.items).find(i => i.key === selectedKey)?.label || 'Dashboard'}
+                    </div>
+
+                    <div className="admin-header-right">
+                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+                            <div className="admin-user-trigger">
+                                <Avatar
+                                    size={34}
+                                    style={{ background: "linear-gradient(135deg,#1677ff,#0958d9)" }}
+                                    icon={<UserOutlined />}
+                                />
+                                <div className="admin-user-info">
+                                    <span className="admin-user-name">{user?.name}</span>
+                                    <span className="admin-user-role">Super Admin</span>
+                                </div>
+                            </div>
+                        </Dropdown>
+                    </div>
+                </Header>
+
+                <Content className="admin-content">
                     <Outlet />
                 </Content>
             </Layout>

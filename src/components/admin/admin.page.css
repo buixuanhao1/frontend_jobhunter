@@ -1,0 +1,70 @@
+/* Shared styles for all admin data pages */
+
+.admin-page {
+    max-width: 1400px;
+}
+
+.admin-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.admin-page-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+.admin-page-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.admin-table-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    overflow: hidden;
+}
+.admin-filter-bar {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-table-card .ant-table {
+    border-radius: 0 !important;
+}
+.admin-table-card .ant-table-thead > tr > th {
+    background: #f8fafc !important;
+    font-weight: 700 !important;
+    color: #374151 !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+.admin-table-card .ant-table-tbody > tr:hover > td {
+    background: #f0f5ff !important;
+}
+.admin-table-card .ant-table-pagination {
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* Action button style */
+.admin-action-icon {
+    cursor: pointer;
+    font-size: 17px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all .15s;
+}
+.admin-action-icon:hover {
+    background: rgba(0,0,0,.06);
+}

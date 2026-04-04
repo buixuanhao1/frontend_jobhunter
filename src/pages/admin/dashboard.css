@@ -1,0 +1,169 @@
+/* ── Page header ─────────────────────────────── */
+.dash-wrapper {
+    max-width: 1400px;
+}
+.dash-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+.dash-page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1.2;
+}
+.dash-page-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+/* ── Stat cards ──────────────────────────────── */
+.dash-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all .25s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.dash-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+}
+.dash-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dash-stat-info { flex: 1; }
+.dash-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.dash-stat-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+.dash-stat-suffix {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+.dash-stat-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: .6;
+}
+
+/* ── Generic card ────────────────────────────── */
+.dash-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    overflow: hidden;
+}
+.dash-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.dash-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.dash-card-body {
+    padding: 20px;
+}
+
+/* ── Resume status bars ──────────────────────── */
+.dash-status-bars {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dash-status-row {
+    display: flex;
+    align-items: center;
+}
+.dash-status-label {
+    font-size: 12px;
+    color: #6b7280;
+    width: 90px;
+    flex-shrink: 0;
+}
+.dash-status-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ── Top companies ───────────────────────────── */
+.dash-top-companies {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.dash-company-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+.dash-company-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f0f5ff;
+    color: #1677ff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+.dash-company-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dash-company-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1677ff;
+    width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+}

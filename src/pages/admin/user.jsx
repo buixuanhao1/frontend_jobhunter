@@ -1,267 +1,147 @@
 import React, { useEffect, useState } from "react";
-import { Table, Space, Popconfirm, message, Button, Input, Form, Tag } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined, EyeOutlined } from "@ant-design/icons";
+import { Table, Space, Popconfirm, message, Button, Input, Form, Tag, Avatar } from "antd";
+import { DeleteOutlined, EditOutlined, PlusOutlined, EyeOutlined, SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { fetchAllUserAPI, deleteUserAPI } from "../../services/api.service";
 import ModalUser from "../../components/admin/user/modal.user";
 import ViewDetailUser from "../../components/admin/user/view.detail.user";
 import dayjs from 'dayjs';
+import '../../components/admin/admin.page.css';
+
+const ROLE_COLOR = { SUPER_ADMIN: 'purple', USER: 'blue', HR: 'green' };
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
     const [isFetching, setIsFetching] = useState(false);
     const [meta, setMeta] = useState({ page: 1, pageSize: 10, total: 0 });
     const [filters, setFilters] = useState({ name: '', email: '' });
-
-    // State để mở Modal
     const [openModal, setOpenModal] = useState(false);
     const [dataInit, setDataInit] = useState(null);
-    const [form] = Form.useForm();
-
-    // State để mở ViewDetail
     const [openViewDetail, setOpenViewDetail] = useState(false);
     const [userSelected, setUserSelected] = useState(null);
+    const [form] = Form.useForm();
 
-    const roleColors = {
-        ADMIN: 'red',
-        USER: 'blue',
-        HR: 'green'
+    useEffect(() => { FetchAllUsers(1, 10, { name: '', email: '' }); }, []);
+
+    const buildQuery = (page, pageSize, f) => {
+        let q = `page=${page}&size=${pageSize}&sort=updatedAt,desc`;
+        const parts = [];
+        if (f.name)  parts.push(`name ~ '${f.name}'`);
+        if (f.email) parts.push(`email ~ '${f.email}'`);
+        if (parts.length) q = `filter=${parts.join(' and ')}&${q}`;
+        return q;
     };
 
-    useEffect(() => {
-        FetchAllUsers(1, meta.pageSize, { name: '', email: '' });
-    }, []); // Chỉ gọi một lần khi component mount
-
-    const buildQuery = (page, pageSize, searchFilters) => {
-        let query = `page=${page}&size=${pageSize}&sort=updatedAt,desc`;
-
-        // Thêm filter nếu có
-        let filterStr = '';
-        if (searchFilters.name) {
-            filterStr = `name ~ '${searchFilters.name}'`;
-        }
-        if (searchFilters.email) {
-            filterStr += searchFilters.name ?
-                ` and email ~ '${searchFilters.email}'` :
-                `email ~ '${searchFilters.email}'`;
-        }
-
-        if (filterStr) {
-            query = `filter=${filterStr}&${query}`;
-        }
-
-        return query;
-    };
-
-    const FetchAllUsers = async (page = 1, pageSize = 10, searchFilters = filters) => {
+    const FetchAllUsers = async (page = 1, pageSize = 10, f = filters) => {
         setIsFetching(true);
         try {
-            const query = buildQuery(page, pageSize, searchFilters);
-            console.log('Query params:', query);
-            const res = await fetchAllUserAPI(query);
+            const res = await fetchAllUserAPI(buildQuery(page, pageSize, f));
             if (res.data) {
                 setUsers(res.data.result);
-                setMeta({
-                    page: res.data.meta.page,
-                    pageSize: res.data.meta.pageSize || 10,
-                    total: res.data.meta.total || 0,
-                });
-            } else {
-                message.error("Lỗi khi tải danh sách người dùng");
+                setMeta({ page: res.data.meta.page, pageSize: res.data.meta.pageSize || 10, total: res.data.meta.total || 0 });
             }
-        } catch (error) {
-            console.error("Error:", error);
-            message.error("Lỗi khi tải danh sách người dùng");
-        } finally {
-            setIsFetching(false);
-        }
+        } catch { message.error("Lỗi khi tải danh sách người dùng"); }
+        setIsFetching(false);
     };
 
-    const handleTableChange = (pagination) => {
-        const { current, pageSize } = pagination;
-        FetchAllUsers(current, pageSize);
-    };
+    const handleSearch = (values) => { setFilters(values); FetchAllUsers(1, meta.pageSize, values); };
+    const handleReset = () => { form.resetFields(); const f = { name: '', email: '' }; setFilters(f); FetchAllUsers(1, meta.pageSize, f); };
 
-    const handleSearch = (values) => {
-        // Gọi API trực tiếp với giá trị mới
-        FetchAllUsers(1, meta.pageSize, values);
-        // Cập nhật state filters sau
-        setFilters(values);
-    };
-
-    const handleReset = () => {
-        form.resetFields();
-        const emptyFilters = { name: '', email: '' };
-        setFilters(emptyFilters);
-        FetchAllUsers(1, meta.pageSize, emptyFilters);
-    };
-
-    const handleDeleteUser = async (id) => {
-        if (id) {
-            const res = await deleteUserAPI(id);
-            console.log(res);
-            if (res.statusCode === 200) {
-                message.success("Xóa người dùng thành công");
-                FetchAllUsers(meta.page, meta.pageSize);
-            } else {
-                message.error("Có lỗi xảy ra khi xóa người dùng");
-            }
-        }
+    const handleDelete = async (id) => {
+        const res = await deleteUserAPI(id);
+        if (res.statusCode === 200) { message.success("Đã xóa người dùng"); FetchAllUsers(meta.page, meta.pageSize); }
+        else message.error("Có lỗi xảy ra");
     };
 
     const columns = [
         {
-            title: "STT",
-            key: "index",
-            width: 50,
-            align: "center",
-            render: (text, record, index) => (
-                <>{(index + 1) + (meta.page - 1) * meta.pageSize}</>
-            ),
+            title: "#", key: "index", width: 52, align: "center",
+            render: (_, __, i) => <span style={{ color: "#9ca3af", fontSize: 13 }}>{(meta.page - 1) * meta.pageSize + i + 1}</span>
         },
         {
-            title: "Tên hiển thị",
-            dataIndex: "name",
-            sorter: true,
-        },
-        {
-            title: "Email",
-            dataIndex: "email",
-            sorter: true,
-        },
-        {
-            title: "Role",
-            dataIndex: "role",
-            render: (role) => (
-                <Tag color={roleColors[role?.name] || 'default'}>
-                    {role?.name || 'N/A'}
-                </Tag>
-            ),
-            filters: [
-                { text: 'Admin', value: 'ADMIN' },
-                { text: 'User', value: 'USER' },
-                { text: 'HR', value: 'HR' }
-            ],
-            onFilter: (value, record) => record.role?.name === value
-        },
-        {
-            title: "Avatar",
-            dataIndex: "avatar",
-            render: (avatar) => (
-                avatar && <img
-                    src={`${import.meta.env.VITE_BACKEND_URL}/storage/user/${avatar}`}
-                    alt="avatar"
-                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '50%' }}
-                />
+            title: "Người dùng", key: "user",
+            render: (_, r) => (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Avatar
+                        size={36}
+                        src={r.avatar ? `${import.meta.env.VITE_BACKEND_URL}/storage/user/${r.avatar}` : undefined}
+                        style={{ background: "linear-gradient(135deg,#1677ff,#0958d9)", flexShrink: 0 }}
+                    >
+                        {!r.avatar && r.name?.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                    <div>
+                        <div style={{ fontWeight: 600, color: "#1a1a2e", fontSize: 14 }}>{r.name}</div>
+                        <div style={{ fontSize: 12, color: "#9ca3af" }}>{r.email}</div>
+                    </div>
+                </div>
             )
         },
         {
-            title: "Ngày tạo",
-            dataIndex: "createdAt",
-            render: (date) => date && dayjs(date).format('DD/MM/YYYY HH:mm:ss'),
-            sorter: true,
+            title: "Vai trò", dataIndex: "role",
+            render: role => <Tag color={ROLE_COLOR[role?.name] || 'default'} style={{ borderRadius: 6 }}>{role?.name || 'N/A'}</Tag>
         },
         {
-            title: "Actions",
-            key: "actions",
-            render: (_, record) => (
+            title: "Ngày tạo", dataIndex: "createdAt", width: 140,
+            render: d => <span style={{ fontSize: 13, color: "#6b7280" }}>{d ? dayjs(d).format('DD/MM/YYYY') : ''}</span>
+        },
+        {
+            title: "Thao tác", key: "actions", width: 100, align: "center",
+            render: (_, r) => (
                 <Space>
-                    <EyeOutlined
-                        style={{ fontSize: 20, color: "#1890ff", cursor: "pointer" }}
-                        onClick={() => {
-                            setUserSelected(record);
-                            setOpenViewDetail(true);
-                        }}
-                    />
-                    <EditOutlined
-                        style={{ fontSize: 20, color: "#ffa500", cursor: "pointer" }}
-                        onClick={() => {
-                            setDataInit({
-                                ...record,
-                                _id: record.id // Ensure we have _id for update
-                            });
-                            setOpenModal(true);
-                        }}
-                    />
-                    <Popconfirm
-                        title="Xác nhận xóa người dùng"
-                        onConfirm={() => handleDeleteUser(record.id)}
-                        okText="Xác nhận"
-                        cancelText="Hủy"
-                    >
-                        <DeleteOutlined
-                            style={{ fontSize: 20, color: "#ff4d4f", cursor: "pointer" }}
-                        />
+                    <EyeOutlined className="admin-action-icon" style={{ color: "#1677ff" }} onClick={() => { setUserSelected(r); setOpenViewDetail(true); }} />
+                    <EditOutlined className="admin-action-icon" style={{ color: "#faad14" }} onClick={() => { setDataInit({ ...r, _id: r.id }); setOpenModal(true); }} />
+                    <Popconfirm title="Xóa người dùng này?" onConfirm={() => handleDelete(r.id)} okText="Xóa" cancelText="Hủy">
+                        <DeleteOutlined className="admin-action-icon" style={{ color: "#ff4d4f" }} />
                     </Popconfirm>
                 </Space>
-            ),
+            )
         },
     ];
 
     return (
-        <div>
-            <Form
-                form={form}
-                layout="inline"
-                onFinish={handleSearch}
-                style={{ marginBottom: 16 }}
-            >
-                <Form.Item name="name" label="Tên">
-                    <Input placeholder="Tìm theo tên" allowClear />
-                </Form.Item>
-                <Form.Item name="email" label="Email">
-                    <Input placeholder="Tìm theo email" allowClear />
-                </Form.Item>
-                <Form.Item>
-                    <Space>
-                        <Button type="primary" htmlType="submit">
-                            Tìm kiếm
-                        </Button>
-                        <Button onClick={handleReset}>Làm lại</Button>
-                    </Space>
-                </Form.Item>
-            </Form>
+        <div className="admin-page">
+            <div className="admin-page-header">
+                <div>
+                    <div className="admin-page-title">Quản lý người dùng</div>
+                    <div className="admin-page-sub">Tổng {meta.total} tài khoản</div>
+                </div>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => { setDataInit(null); setOpenModal(true); }}>
+                    Thêm người dùng
+                </Button>
+            </div>
 
-            <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                    setDataInit(null);
-                    setOpenModal(true);
-                }}
-                style={{ marginBottom: 16 }}
-            >
-                Thêm người dùng
-            </Button>
+            <div className="admin-table-card">
+                <div className="admin-filter-bar">
+                    <Form form={form} layout="inline" onFinish={handleSearch}>
+                        <Form.Item name="name">
+                            <Input prefix={<SearchOutlined style={{ color: "#9ca3af" }} />} placeholder="Tìm theo tên" allowClear style={{ width: 200 }} />
+                        </Form.Item>
+                        <Form.Item name="email">
+                            <Input prefix={<SearchOutlined style={{ color: "#9ca3af" }} />} placeholder="Tìm theo email" allowClear style={{ width: 220 }} />
+                        </Form.Item>
+                        <Form.Item>
+                            <Space>
+                                <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>Tìm</Button>
+                                <Button icon={<ReloadOutlined />} onClick={handleReset}>Reset</Button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+                </div>
 
-            <Table
-                rowKey="id"
-                columns={columns}
-                dataSource={users}
-                loading={isFetching}
-                pagination={{
-                    current: meta.page,
-                    pageSize: meta.pageSize,
-                    total: meta.total,
-                    showSizeChanger: true,
-                    showTotal: (total) => `Tổng số ${total} người dùng`
-                }}
-                onChange={handleTableChange}
-            />
+                <Table
+                    rowKey="id"
+                    columns={columns}
+                    dataSource={users}
+                    loading={isFetching}
+                    pagination={{
+                        current: meta.page, pageSize: meta.pageSize, total: meta.total,
+                        showSizeChanger: true, showTotal: t => `Tổng ${t} người dùng`,
+                        onChange: (p, s) => FetchAllUsers(p, s)
+                    }}
+                />
+            </div>
 
-            <ModalUser
-                openModal={openModal}
-                setOpenModal={setOpenModal}
-                dataInit={dataInit}
-                setDataInit={setDataInit}
-                reloadTable={() => FetchAllUsers(meta.page, meta.pageSize)}
-            />
-
-            <ViewDetailUser
-                open={openViewDetail}
-                onClose={setOpenViewDetail}
-                dataInit={userSelected}
-                setDataInit={setUserSelected}
-            />
+            <ModalUser openModal={openModal} setOpenModal={setOpenModal} dataInit={dataInit} setDataInit={setDataInit} reloadTable={() => FetchAllUsers(meta.page, meta.pageSize)} />
+            <ViewDetailUser open={openViewDetail} onClose={setOpenViewDetail} dataInit={userSelected} setDataInit={setUserSelected} />
         </div>
     );
 };

@@ -1,246 +1,127 @@
 import React, { useEffect, useState } from "react";
-import { Table, Space, Popconfirm, message, Button, Input, Form, Tag, Drawer, Descriptions, Select } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { fetchAllResumeAPI, callDeleteResume, callUpdateResumeStatus } from "../../services/api.service";
+import { Table, Space, Popconfirm, message, Button, Form, Tag, Select } from "antd";
+import { DeleteOutlined, EditOutlined, ReloadOutlined } from "@ant-design/icons";
+import { fetchAllResumeAPI, callDeleteResume } from "../../services/api.service";
 import ViewDetailResume from "../../components/admin/resume/view.resume";
 import dayjs from 'dayjs';
+import '../../components/admin/admin.page.css';
+
+const { Option } = Select;
+const STATUS_COLOR = { PENDING: 'orange', REVIEWING: 'blue', APPROVED: 'green', REJECTED: 'red' };
+const STATUS_LABEL = { PENDING: 'Chờ xem xét', REVIEWING: 'Đang xem xét', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' };
 
 const ResumePage = () => {
     const [resumes, setResumes] = useState([]);
     const [isFetching, setIsFetching] = useState(false);
     const [meta, setMeta] = useState({ page: 1, pageSize: 10, total: 0 });
-    const [filters, setFilters] = useState({ status: '' });
-
-    // State để mở Modal
+    const [statusFilter, setStatusFilter] = useState('');
     const [openViewDetail, setOpenViewDetail] = useState(false);
     const [dataInit, setDataInit] = useState(null);
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        FetchAllResumes(1, meta.pageSize, { status: '' });
-    }, []);
+    useEffect(() => { FetchAllResumes(1, 10, ''); }, []);
 
-    const buildQuery = (page, pageSize, searchFilters) => {
-        let query = `page=${page}&size=${pageSize}&sort=updatedAt,desc`;
-
-        // Thêm filter nếu có
-        let filterStr = '';
-        if (searchFilters.status) {
-            filterStr = `status ~ '${searchFilters.status}'`;
-        }
-
-        if (filterStr) {
-            query = `filter=${filterStr}&${query}`;
-        }
-
-        return query;
+    const buildQuery = (page, pageSize, status) => {
+        let q = `page=${page}&size=${pageSize}&sort=updatedAt,desc`;
+        if (status) q = `filter=status ~ '${status}'&${q}`;
+        return q;
     };
 
-    const FetchAllResumes = async (page = 1, pageSize = 10, searchFilters = filters) => {
+    const FetchAllResumes = async (page = 1, pageSize = 10, status = statusFilter) => {
         setIsFetching(true);
         try {
-            const query = buildQuery(page, pageSize, searchFilters);
-            console.log('Query params:', query);
-            const res = await fetchAllResumeAPI(query);
-            if (res && res.data) {
+            const res = await fetchAllResumeAPI(buildQuery(page, pageSize, status));
+            if (res?.data) {
                 setResumes(res.data.result || []);
-                setMeta({
-                    page: res.data.meta.page,
-                    pageSize: res.data.meta.pageSize || 10,
-                    total: res.data.meta.total || 0,
-                });
-            } else {
-                setResumes([]);
-                message.error("Lỗi khi tải danh sách resume");
+                setMeta({ page: res.data.meta.page, pageSize: res.data.meta.pageSize || 10, total: res.data.meta.total || 0 });
             }
-        } catch (error) {
-            console.error("Error:", error);
-            setResumes([]);
-            message.error("Lỗi khi tải danh sách resume");
-        } finally {
-            setIsFetching(false);
-        }
+        } catch { message.error("Lỗi khi tải dữ liệu"); }
+        setIsFetching(false);
     };
 
-    const handleTableChange = (pagination) => {
-        const { current, pageSize } = pagination;
-        FetchAllResumes(current, pageSize);
-    };
-
-    const handleSearch = (values) => {
-        FetchAllResumes(1, meta.pageSize, values);
-        setFilters(values);
-    };
-
-    const handleReset = () => {
-        form.resetFields();
-        const emptyFilters = { status: '' };
-        setFilters(emptyFilters);
-        FetchAllResumes(1, meta.pageSize, emptyFilters);
-    };
-
-    const handleDeleteResume = async (id) => {
-        if (id) {
-            const res = await callDeleteResume(id);
-            if (res && +res.data.statusCode === 202) {
-                message.success("Xóa Resume thành công");
-                FetchAllResumes(meta.page, meta.pageSize);
-            } else {
-                message.error("Có lỗi xảy ra khi xóa Resume");
-            }
-        }
-    };
-
-    const handleChangeStatus = async () => {
-        if (dataInit) {
-            const status = form.getFieldValue('status');
-            const res = await callUpdateResumeStatus(dataInit.id, status);
-            if (res && res.data) {
-                message.success("Cập nhật trạng thái thành công");
-                setDataInit(null);
-                setOpenViewDetail(false);
-                FetchAllResumes(meta.page, meta.pageSize);
-            } else {
-                message.error("Có lỗi xảy ra khi cập nhật trạng thái");
-            }
-        }
+    const handleDelete = async (id) => {
+        const res = await callDeleteResume(id);
+        if (+res?.data?.statusCode === 202) { message.success("Đã xóa đơn"); FetchAllResumes(meta.page, meta.pageSize); }
+        else message.error("Có lỗi xảy ra");
     };
 
     const columns = [
         {
-            title: "STT",
-            key: "index",
-            width: 50,
-            align: "center",
-            render: (text, record, index) => (
-                <>{(index + 1) + (meta.page - 1) * meta.pageSize}</>
-            ),
+            title: "#", key: "index", width: 52, align: "center",
+            render: (_, __, i) => <span style={{ color: "#9ca3af", fontSize: 13 }}>{(meta.page - 1) * meta.pageSize + i + 1}</span>
         },
         {
-            title: "Trạng thái",
-            dataIndex: "status",
-            render: (status) => {
-                let color = 'default';
-                switch (status) {
-                    case 'PENDING':
-                        color = 'orange';
-                        break;
-                    case 'REVIEWING':
-                        color = 'blue';
-                        break;
-                    case 'APPROVED':
-                        color = 'green';
-                        break;
-                    case 'REJECTED':
-                        color = 'red';
-                        break;
-                    default:
-                        color = 'default';
-                }
-                return <Tag color={color}>{status}</Tag>;
-            }
+            title: "Ứng viên", key: "user",
+            render: (_, r) => (
+                <div>
+                    <div style={{ fontWeight: 600, color: "#1a1a2e" }}>{r.user?.name || r.email || "—"}</div>
+                    <div style={{ fontSize: 12, color: "#9ca3af" }}>{r.user?.email}</div>
+                </div>
+            )
+        },
+        { title: "Vị trí", dataIndex: ["job", "name"], render: v => v || "—" },
+        { title: "Công ty", dataIndex: "companyName" },
+        {
+            title: "Trạng thái", dataIndex: "status",
+            render: s => <Tag color={STATUS_COLOR[s] || 'default'} style={{ borderRadius: 6 }}>{STATUS_LABEL[s] || s}</Tag>
         },
         {
-            title: "Tên Job",
-            dataIndex: ["job", "name"],
+            title: "CV", dataIndex: "url",
+            render: url => url
+                ? <a href={`${import.meta.env.VITE_BACKEND_URL}/storage/resume/${url}`} target="_blank">Xem CV</a>
+                : "—"
         },
         {
-            title: "Tên Công Ty",
-            dataIndex: "companyName",
+            title: "Ngày nộp", dataIndex: "createdAt", width: 130,
+            render: t => <span style={{ fontSize: 13, color: "#6b7280" }}>{t ? dayjs(t).format('DD/MM/YYYY') : ''}</span>
         },
         {
-            title: "Ngày tạo",
-            dataIndex: "createdAt",
-            render: (text) => text ? dayjs(text).format('DD-MM-YYYY HH:mm:ss') : "",
-        },
-        {
-            title: "Ngày sửa",
-            dataIndex: "updatedAt",
-            render: (text) => text ? dayjs(text).format('DD-MM-YYYY HH:mm:ss') : "",
-        },
-        {
-            title: "CV",
-            dataIndex: "url",
-            render: (url) => url ? (
-                <a
-                    href={`${import.meta.env.VITE_BACKEND_URL}/storage/resume/${url}`}
-                    target="_blank"
-                >
-                    Xem CV
-                </a>
-            ) : "Không có CV"
-        },
-        {
-            title: "Actions",
-            key: "actions",
-            render: (_, record) => (
+            title: "Thao tác", key: "actions", width: 90, align: "center",
+            render: (_, r) => (
                 <Space>
-                    <EditOutlined
-                        style={{ fontSize: 20, color: "#ffa500", cursor: "pointer" }}
-                        onClick={() => {
-                            setDataInit(record);
-                            setOpenViewDetail(true);
-                        }}
-                    />
-                    <Popconfirm
-                        title="Xác nhận xóa resume"
-                        onConfirm={() => handleDeleteResume(record.id)}
-                        okText="Xác nhận"
-                        cancelText="Hủy"
-                    >
-                        <DeleteOutlined
-                            style={{ fontSize: 20, color: "#ff4d4f", cursor: "pointer" }}
-                        />
+                    <EditOutlined className="admin-action-icon" style={{ color: "#faad14" }} onClick={() => { setDataInit(r); setOpenViewDetail(true); }} />
+                    <Popconfirm title="Xóa đơn ứng tuyển này?" onConfirm={() => handleDelete(r.id)} okText="Xóa" cancelText="Hủy">
+                        <DeleteOutlined className="admin-action-icon" style={{ color: "#ff4d4f" }} />
                     </Popconfirm>
                 </Space>
-            ),
+            )
         },
     ];
 
     return (
-        <div>
-            <Form
-                form={form}
-                layout="inline"
-                onFinish={handleSearch}
-                style={{ marginBottom: 16 }}
-            >
-                <Form.Item name="status" label="Trạng thái">
-                    <Select
-                        style={{ width: 200 }}
-                        placeholder="Chọn trạng thái"
-                        allowClear
-                    >
-                        <Select.Option value="PENDING">PENDING</Select.Option>
-                        <Select.Option value="REVIEWING">REVIEWING</Select.Option>
-                        <Select.Option value="APPROVED">APPROVED</Select.Option>
-                        <Select.Option value="REJECTED">REJECTED</Select.Option>
-                    </Select>
-                </Form.Item>
-                <Form.Item>
-                    <Space>
-                        <Button type="primary" htmlType="submit">
-                            Tìm kiếm
-                        </Button>
-                        <Button onClick={handleReset}>Làm lại</Button>
-                    </Space>
-                </Form.Item>
-            </Form>
+        <div className="admin-page">
+            <div className="admin-page-header">
+                <div>
+                    <div className="admin-page-title">Quản lý đơn ứng tuyển</div>
+                    <div className="admin-page-sub">Tổng {meta.total} đơn</div>
+                </div>
+            </div>
 
-            <Table
-                rowKey="id"
-                columns={columns}
-                dataSource={resumes}
-                loading={isFetching}
-                pagination={{
-                    current: meta.page,
-                    pageSize: meta.pageSize,
-                    total: meta.total,
-                    showSizeChanger: true,
-                    showTotal: (total) => `Tổng số ${total} resume`
-                }}
-                onChange={handleTableChange}
-            />
+            <div className="admin-table-card">
+                <div className="admin-filter-bar">
+                    <Select
+                        allowClear
+                        placeholder="Lọc theo trạng thái"
+                        style={{ width: 200 }}
+                        onChange={v => { const s = v ?? ''; setStatusFilter(s); FetchAllResumes(1, meta.pageSize, s); }}
+                    >
+                        {Object.entries(STATUS_LABEL).map(([k, v]) => <Option key={k} value={k}>{v}</Option>)}
+                    </Select>
+                    <Button icon={<ReloadOutlined />} onClick={() => { setStatusFilter(''); FetchAllResumes(1, meta.pageSize, ''); }}>Reset</Button>
+                </div>
+
+                <Table
+                    rowKey="id"
+                    columns={columns}
+                    dataSource={resumes}
+                    loading={isFetching}
+                    pagination={{
+                        current: meta.page, pageSize: meta.pageSize, total: meta.total,
+                        showSizeChanger: true, showTotal: t => `Tổng ${t} đơn`,
+                        onChange: (p, s) => FetchAllResumes(p, s)
+                    }}
+                />
+            </div>
 
             <ViewDetailResume
                 open={openViewDetail}

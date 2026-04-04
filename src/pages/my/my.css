@@ -1,0 +1,173 @@
+.my-portal {
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 40px 0 64px;
+}
+.my-portal-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.my-portal-header {
+    margin-bottom: 28px;
+}
+.my-portal-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+}
+.my-portal-sub {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Card shared */
+.my-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+/* Profile */
+.my-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+.my-profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.my-profile-email {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+.my-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.my-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.my-info-row:last-child { border-bottom: none; }
+.my-info-label { font-size: 14px; color: #9ca3af; font-weight: 500; }
+.my-info-val   { font-size: 14px; color: #374151; font-weight: 600; }
+
+/* List items */
+.my-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Resume item */
+.my-resume-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.my-resume-item:hover {
+    border-color: #1677ff;
+    box-shadow: 0 4px 16px rgba(22,119,255,.1);
+}
+.my-resume-job {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+}
+.my-resume-company {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+.my-resume-date {
+    font-size: 12px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.my-resume-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.my-cv-link {
+    font-size: 12px;
+    color: #1677ff;
+    font-weight: 500;
+}
+
+/* Job item */
+.my-job-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.my-job-item:hover {
+    border-color: #1677ff;
+    box-shadow: 0 4px 16px rgba(22,119,255,.1);
+}
+.my-job-logo {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
+    background: #fafafa;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.my-job-logo img {
+    width: 44px; height: 44px;
+    object-fit: contain;
+}
+.my-job-info { flex: 1; min-width: 0; }
+.my-job-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+}
+.my-job-company {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+.my-job-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #9ca3af;
+    flex-wrap: wrap;
+}
+
+/* Tabs override */
+.my-tabs .ant-tabs-nav { margin-bottom: 20px; }

@@ -1,100 +1,141 @@
-import React, { useEffect, useState } from "react";
-import { Card, Col, Row, Divider, Pagination, Spin, Empty } from "antd";
-import { fetchAllJobAPI } from "../../../services/api.service";
-import { isMobile } from "react-device-detect";
-import { Link, useNavigate } from "react-router-dom";
-import styles from '../../../styles/client.module.scss';
-import { EnvironmentOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import React, { useContext, useEffect, useState } from "react";
+import { Col, Row, Pagination, Spin, Empty, message, Tooltip, Tag } from "antd";
+import { fetchAllJobAPI, saveJobAPI, unsaveJobAPI, fetchSavedJobsAPI } from "../../../services/api.service";
+import { useNavigate } from "react-router-dom";
+import { EnvironmentOutlined, HeartFilled, HeartOutlined, DollarOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { AuthContext } from "../../context/auth.context";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "./job.card.css";
 
+dayjs.extend(relativeTime);
 
-const JobCard = ({ showPagination = false }) => {
+const LEVEL_COLOR = {
+    INTERN: "blue",
+    FRESHER: "cyan",
+    JUNIOR: "green",
+    MIDDLE: "orange",
+    SENIOR: "red",
+};
+
+const JobCard = ({ showPagination = false, query = "" }) => {
     const [displayJob, setDisplayJob] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(6);
+    const [pageSize] = useState(6);
     const [total, setTotal] = useState(0);
+    const [savedIds, setSavedIds] = useState(new Set());
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         fetchJobs();
-    }, [current, pageSize]);
+    }, [current, query]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        fetchSavedJobsAPI().then(res => {
+            if (res?.data) setSavedIds(new Set(res.data.map(s => s.job.id)));
+        });
+    }, [user?.id]);
 
     const fetchJobs = async () => {
         setIsLoading(true);
         try {
-            const res = await fetchAllJobAPI(`page=${current}&size=${pageSize}`);
-            if (res && res.data) {
+            const q = query
+                ? `page=${current}&size=${pageSize}&${query}`
+                : `page=${current}&size=${pageSize}`;
+            const res = await fetchAllJobAPI(q);
+            if (res?.data) {
                 setDisplayJob(res.data.result);
                 setTotal(res.data.meta.total);
             }
-        } catch (error) {
-            console.error("Lỗi khi fetch dữ liệu:", error);
+        } catch (e) {
+            console.error(e);
         }
         setIsLoading(false);
     };
 
-    const handlePageChange = (page, size) => {
-        setCurrent(page);
-        setPageSize(size);
-    };
-
-    const handleViewDetailJob = (item) => {
-        navigate(`/job/${item.id}`);
+    const toggleSave = async (e, jobId) => {
+        e.stopPropagation();
+        if (!user?.id) { message.warning("Vui lòng đăng nhập để lưu việc làm"); return; }
+        if (savedIds.has(jobId)) {
+            await unsaveJobAPI(jobId);
+            setSavedIds(prev => { const s = new Set(prev); s.delete(jobId); return s; });
+            message.success("Đã bỏ lưu");
+        } else {
+            await saveJobAPI(jobId);
+            setSavedIds(prev => new Set(prev).add(jobId));
+            message.success("Đã lưu việc làm");
+        }
     };
 
     return (
-        <div className={styles["card-job-section"]}>
-            <div className={styles["job-content"]}>
-                <Spin spinning={isLoading} tip="Đang tải...">
-                    <Row gutter={[20, 20]}>
-                        <Col span={24}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} className={isMobile ? "dflex-mobile" : "dflex-pc"}>
-                                <span className="title">Việc Làm Mới Nhất</span>
-                                {!showPagination && <Link to="/job">Xem tất cả</Link>}
+        <Spin spinning={isLoading} tip="Đang tải...">
+            {displayJob.length > 0 ? (
+                <Row gutter={[16, 16]}>
+                    {displayJob.map(item => (
+                        <Col xs={24} md={12} key={item.id}>
+                            <div className="job-card" onClick={() => navigate(`/job/${item.id}`)}>
+                                <div className="job-card-logo">
+                                    <img
+                                        alt={item?.company?.name}
+                                        src={`${import.meta.env.VITE_BACKEND_URL}/storage/company/${item?.company?.logo}`}
+                                    />
+                                </div>
+                                <div className="job-card-body">
+                                    <div className="job-card-title">{item.name}</div>
+                                    <div className="job-card-company">{item?.company?.name}</div>
+                                    <div className="job-card-meta">
+                                        <span className="job-meta-item">
+                                            <EnvironmentOutlined /> {item.location}
+                                        </span>
+                                        <span className="job-meta-item">
+                                            <DollarOutlined /> {(item.salary + "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")} đ
+                                        </span>
+                                    </div>
+                                    <div className="job-card-footer">
+                                        {item.level && (
+                                            <Tag color={LEVEL_COLOR[item.level] || "default"} style={{ borderRadius: 6 }}>
+                                                {item.level}
+                                            </Tag>
+                                        )}
+                                        <span className="job-card-time">
+                                            <ClockCircleOutlined /> {dayjs(item.updatedAt || item.createdAt).fromNow()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <Tooltip title={savedIds.has(item.id) ? "Bỏ lưu" : "Lưu việc làm"}>
+                                    <button
+                                        className={`job-save-btn ${savedIds.has(item.id) ? "saved" : ""}`}
+                                        onClick={e => toggleSave(e, item.id)}
+                                    >
+                                        {savedIds.has(item.id)
+                                            ? <HeartFilled />
+                                            : <HeartOutlined />
+                                        }
+                                    </button>
+                                </Tooltip>
                             </div>
                         </Col>
-                        {displayJob.length > 0 ? (
-                            displayJob.map((item) => (
-                                <Col span={24} md={12} key={item.id}>
-                                    <Card size="small" title={null} hoverable
-                                        onClick={() => handleViewDetailJob(item)}
-                                    >
-                                        <div className={styles["card-job-content"]}>
-                                            <div className={styles["card-job-left"]}>
-                                                <img
-                                                    alt="example"
-                                                    src={`${import.meta.env.VITE_BACKEND_URL}/storage/company/${item?.company?.logo}`}
-                                                />
-                                            </div>
-                                            <div className={styles["card-job-right"]}>
-                                                <div className={styles["job-title"]}>{item.name}</div>
-                                                <div className={styles["job-location"]}><EnvironmentOutlined style={{ color: '#58aaab' }} />&nbsp;</div>
-                                                <div><ThunderboltOutlined style={{ color: 'orange' }} />&nbsp;{(item.salary + "")?.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ</div>
-                                            </div>
-                                        </div>
+                    ))}
+                </Row>
+            ) : (
+                !isLoading && <Empty description="Không có việc làm" />
+            )}
 
-                                    </Card>
-                                </Col>
-                            ))
-                        ) : (
-                            !isLoading && <Empty description="Không có dữ liệu" />
-                        )}
-                    </Row>
-
-                    {showPagination && (
-                        <Row style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
-                            <Pagination
-                                current={current}
-                                total={total}
-                                pageSize={pageSize}
-                                responsive
-                                onChange={handlePageChange}
-                            />
-                        </Row>
-                    )}
-                </Spin>
-            </div>
-        </div>
+            {showPagination && total > pageSize && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+                    <Pagination
+                        current={current}
+                        total={total}
+                        pageSize={pageSize}
+                        responsive
+                        onChange={p => setCurrent(p)}
+                    />
+                </div>
+            )}
+        </Spin>
     );
 };
 

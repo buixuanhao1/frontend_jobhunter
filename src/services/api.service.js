@@ -291,6 +291,44 @@ const fetchHRByCompanyAPI = (companyId) => {
     return axios.get(`/api/v1/chats/hr/company/${companyId}`);
 };
 
+// Saved Jobs APIs
+const fetchSavedJobsAPI = () => axios.get('/api/v1/saved-jobs');
+const checkSavedJobAPI = (jobId) => axios.get(`/api/v1/saved-jobs/${jobId}/check`);
+const saveJobAPI = (jobId) => axios.post(`/api/v1/saved-jobs/${jobId}`);
+const unsaveJobAPI = (jobId) => axios.delete(`/api/v1/saved-jobs/${jobId}`);
+
+// Company Review APIs
+const fetchCompanyReviewsAPI = (companyId) => axios.get(`/api/v1/companies/${companyId}/reviews`);
+const fetchReviewSummaryAPI = (companyId) => axios.get(`/api/v1/companies/${companyId}/reviews/summary`);
+const createReviewAPI = (companyId, data) => axios.post(`/api/v1/companies/${companyId}/reviews`, data);
+const checkReviewedAPI = (companyId) => axios.get(`/api/v1/companies/${companyId}/reviews/my`);
+
+// Stats APIs
+const fetchStatsOverviewAPI = () => axios.get('/api/v1/stats/overview');
+const fetchResumesByStatusAPI = () => axios.get('/api/v1/stats/resumes-by-status');
+const fetchTopCompaniesAPI = () => axios.get('/api/v1/stats/top-companies');
+const fetchJobsByLevelAPI = () => axios.get('/api/v1/stats/jobs-by-level');
+
+// Blog / Forum APIs
+const fetchPostsAPI = (page = 0, size = 10, category = '') =>
+    axios.get(`/api/v1/posts?page=${page}&size=${size}${category ? `&category=${category}` : ''}`);
+const searchPostsAPI = (keyword, page = 0, size = 10) =>
+    axios.get(`/api/v1/posts/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
+const fetchPostByIdAPI = (id) => axios.get(`/api/v1/posts/${id}`);
+const createPostAPI = (data) => axios.post('/api/v1/posts', data);
+const updatePostAPI = (id, data) => axios.put(`/api/v1/posts/${id}`, data);
+const deletePostAPI = (id) => axios.delete(`/api/v1/posts/${id}`);
+const fetchCommentsAPI = (postId) => axios.get(`/api/v1/posts/${postId}/comments`);
+const addCommentAPI = (postId, content) => axios.post(`/api/v1/posts/${postId}/comments`, { content });
+const deleteCommentAPI = (commentId) => axios.delete(`/api/v1/posts/comments/${commentId}`);
+const toggleLikeAPI = (postId) => axios.post(`/api/v1/posts/${postId}/like`);
+const checkLikeAPI = (postId) => axios.get(`/api/v1/posts/${postId}/like`);
+
+// Notification APIs
+const fetchNotificationsAPI = () => axios.get('/api/v1/notifications');
+const fetchUnreadCountAPI = () => axios.get('/api/v1/notifications/unread-count');
+const markAllReadAPI = () => axios.put('/api/v1/notifications/read-all');
+
 // Subscriber APIs
 const callCreateSubscriber = (data) => {
     const URL_BACKEND = "/api/v1/subscribers";
@@ -331,5 +369,29 @@ export {
     fetchChatHistoryAPI,
     fetchChatPartnersAPI,
     fetchUsersForChatAPI,
-    fetchHRByCompanyAPI
+    fetchHRByCompanyAPI,
+    // Saved Jobs
+    fetchSavedJobsAPI,
+    checkSavedJobAPI,
+    saveJobAPI,
+    unsaveJobAPI,
+    // Company Reviews
+    fetchCompanyReviewsAPI,
+    fetchReviewSummaryAPI,
+    createReviewAPI,
+    checkReviewedAPI,
+    // Stats
+    fetchStatsOverviewAPI,
+    fetchResumesByStatusAPI,
+    fetchTopCompaniesAPI,
+    fetchJobsByLevelAPI,
+    // Blog / Forum
+    fetchPostsAPI, searchPostsAPI, fetchPostByIdAPI,
+    createPostAPI, updatePostAPI, deletePostAPI,
+    fetchCommentsAPI, addCommentAPI, deleteCommentAPI,
+    toggleLikeAPI, checkLikeAPI,
+    // Notifications
+    fetchNotificationsAPI,
+    fetchUnreadCountAPI,
+    markAllReadAPI,
 };

@@ -1,9 +1,123 @@
-.footer {
-    position: fixed;
-    padding: 3px;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #ccc;
-    text-align: center;
+.site-footer {
+    background: #0f172a;
+    color: #94a3b8;
+}
+
+.footer-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 24px 40px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+}
+
+/* Brand */
+.footer-brand {
+    flex: 1;
+    min-width: 220px;
+    max-width: 300px;
+}
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    margin-bottom: 14px;
+    font-size: 22px;
+}
+.footer-logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.footer-tagline {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+.footer-socials {
+    display: flex;
+    gap: 10px;
+}
+.footer-social {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 16px;
+    transition: all .2s;
+    text-decoration: none;
+}
+.footer-social:hover {
+    border-color: #1677ff;
+    color: #1677ff;
+    background: rgba(22,119,255,.1);
+}
+
+/* Links */
+.footer-links-group {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    flex: 2;
+    justify-content: flex-end;
+}
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 120px;
+}
+.footer-col-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 4px;
+}
+.footer-link {
+    font-size: 13px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color .2s;
+}
+.footer-link:hover { color: #1677ff; }
+
+.footer-contact {
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Bottom bar */
+.footer-bottom {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .footer-inner { flex-direction: column; gap: 32px; }
+    .footer-brand { max-width: 100%; }
+    .footer-links-group { justify-content: flex-start; }
 }

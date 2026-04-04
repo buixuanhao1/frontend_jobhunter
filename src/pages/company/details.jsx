@@ -6,6 +6,7 @@ import parse from "html-react-parser";
 import { callFetchCompanyById, fetchJobsByCompanyAPI } from "../../services/api.service";
 import "../../styles/ClientCompanyDetail.css";
 import { useNavigate } from "react-router-dom";
+import CompanyReviews from "../../components/client/CompanyReviews";
 
 const ClientCompanyDetailPage = () => {
     const [companyDetail, setCompanyDetail] = useState(null);
@@ -94,6 +95,8 @@ const ClientCompanyDetailPage = () => {
                     </Row>
 
                     <Divider />
+
+                    {companyDetail?.id && <CompanyReviews companyId={companyDetail.id} />}
 
                     <div className="company-jobs-section">
                         <h2>Các vị trí đang tuyển dụng</h2>
