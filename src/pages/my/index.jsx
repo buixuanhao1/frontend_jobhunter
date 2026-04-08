@@ -5,10 +5,11 @@ import {
     EnvironmentOutlined, DollarOutlined, ClockCircleOutlined
 } from "@ant-design/icons";
 import { AuthContext } from "../../components/context/auth.context";
-import { callFetchResumeByUser, fetchSavedJobsAPI } from "../../services/api.service";
+import { callFetchResumeByUser, fetchSavedJobsAPI, callUpdateProfile, getAccount } from "../../services/api.service";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { Modal, Form, Input, InputNumber, Select, message, Row, Col } from "antd";
 import "./my.css";
 
 dayjs.extend(relativeTime);
@@ -21,16 +22,49 @@ const STATUS_LABEL = {
 };
 
 const MyProfile = () => {
-    const { user } = useContext(AuthContext);
+    const { user, setUser } = useContext(AuthContext);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+
+    const onFinish = async (values) => {
+        setLoading(true);
+        try {
+            const res = await callUpdateProfile(values);
+            if (res.data) {
+                message.success("Cập nhật thông tin thành công");
+                setIsModalOpen(false);
+                // Refresh account to update AuthContext
+                const resAcc = await getAccount();
+                if (resAcc.data) setUser(resAcc.data.user);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || "Có lỗi xảy ra");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="my-card">
             <div className="my-profile-header">
                 <Avatar size={80} style={{ background: "linear-gradient(135deg,#1677ff,#0958d9)", fontSize: 32 }} icon={<UserOutlined />} />
-                <div>
+                <div style={{ flex: 1 }}>
                     <div className="my-profile-name">{user.name}</div>
                     <div className="my-profile-email">{user.email}</div>
                     {user.role && <Tag color="blue" style={{ marginTop: 6 }}>{user.role.name}</Tag>}
                 </div>
+                <Button type="primary" ghost onClick={() => {
+                    form.setFieldsValue({
+                        name: user.name,
+                        age: user.age,
+                        gender: user.gender,
+                        address: user.address
+                    });
+                    setIsModalOpen(true);
+                }}>
+                    Chỉnh sửa
+                </Button>
             </div>
             <div className="my-profile-info">
                 {[
@@ -44,6 +78,67 @@ const MyProfile = () => {
                     </div>
                 ))}
             </div>
+
+            <Modal
+                title="Chỉnh sửa thông tin cá nhân"
+                open={isModalOpen}
+                onOk={() => form.submit()}
+                onCancel={() => setIsModalOpen(false)}
+                confirmLoading={loading}
+                width={600}
+                okText="Lưu thông tin"
+                cancelText="Hủy"
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={onFinish}
+                    style={{ marginTop: 20 }}
+                >
+                    <Row gutter={16}>
+                        <Col span={24}>
+                            <Form.Item
+                                label="Họ tên"
+                                name="name"
+                                rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
+                            >
+                                <Input prefix={<UserOutlined />} placeholder="Nhập họ tên của bạn" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Tuổi"
+                                name="age"
+                                rules={[{ required: true, message: 'Vui lòng nhập tuổi!' }]}
+                            >
+                                <InputNumber style={{ width: '100%' }} min={16} placeholder="Nhập tuổi" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Giới tính"
+                                name="gender"
+                                rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
+                            >
+                                <Select placeholder="Chọn giới tính">
+                                    <Select.Option value="MALE">Nam</Select.Option>
+                                    <Select.Option value="FEMALE">Nữ</Select.Option>
+                                    <Select.Option value="OTHER">Khác</Select.Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item
+                                label="Địa chỉ"
+                                name="address"
+                                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
+                            >
+                                <Input.TextArea rows={3} placeholder="Nhập địa chỉ đầy đủ của bạn" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
+            </Modal>
         </div>
     );
 };
