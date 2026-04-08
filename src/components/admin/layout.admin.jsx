@@ -79,11 +79,16 @@ const LayoutAdmin = () => {
     };
 
     const handleLogout = async () => {
-        await logoutUserAPI();
-        localStorage.removeItem("access_token");
-        setUser({ email: "", name: "", id: "" });
-        message.success('Đăng xuất thành công');
-        navigate('/');
+        try {
+            await logoutUserAPI();
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("access_token");
+            setUser({ email: "", name: "", id: "" });
+            message.success('Đăng xuất thành công');
+            navigate('/');
+        }
     };
 
     const userMenuItems = [

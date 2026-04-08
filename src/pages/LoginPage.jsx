@@ -1,9 +1,10 @@
 import { Button, Form, Input, message, notification } from "antd";
 import { LockOutlined, MailOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { loginUserAPI } from '../services/api.service';
+import { loginUserAPI, callGoogleLogin } from '../services/api.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from "react";
 import { AuthContext } from "../components/context/auth.context";
+import { GoogleLogin } from '@react-oauth/google';
 import './auth.css';
 
 const LoginPage = () => {
@@ -22,6 +23,21 @@ const LoginPage = () => {
             notification.error({
                 message: "Đăng nhập thất bại",
                 description: "Email hoặc mật khẩu không đúng"
+            });
+        }
+    };
+
+    const handleGoogleLoginSuccess = async (credentialResponse) => {
+        const res = await callGoogleLogin(credentialResponse.credential);
+        if (res.data) {
+            localStorage.setItem("access_token", res.data.access_token);
+            setUser(res.data.user);
+            notification.success({ message: "Đăng nhập bằng Google thành công!", duration: 2 });
+            navigate("/");
+        } else {
+            notification.error({
+                message: "Đăng nhập Google thất bại",
+                description: "Có lỗi xảy ra khi xác thực với hệ thống"
             });
         }
     };
@@ -97,6 +113,12 @@ const LoginPage = () => {
                             />
                         </Form.Item>
 
+                        <div className="auth-options" style={{ marginBottom: 16, textAlign: 'right' }}>
+                            <Link to="/forgot-password" style={{ color: '#4f46e5', fontSize: '14px', fontWeight: 500 }}>
+                                Quên mật khẩu?
+                            </Link>
+                        </div>
+
                         <Form.Item style={{ marginBottom: 12 }}>
                             <Button
                                 type="primary"
@@ -111,6 +133,21 @@ const LoginPage = () => {
 
                     <div className="auth-divider">
                         <span>hoặc</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                        <GoogleLogin
+                            onSuccess={handleGoogleLoginSuccess}
+                            onError={() => {
+                                notification.error({ message: 'Google Login Failed' });
+                            }}
+                            useOneTap
+                            theme="outline"
+                            size="large"
+                            text="signin_with"
+                            shape="rectangular"
+                            width="320px"
+                        />
                     </div>
 
                     <div style={{ textAlign: "center" }}>

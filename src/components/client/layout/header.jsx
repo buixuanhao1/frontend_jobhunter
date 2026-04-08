@@ -30,15 +30,14 @@ const Header = () => {
 
     const handleLogout = async () => {
         try {
-            const res = await logoutUserAPI();
-            if (res && res.statusCode === 200) {
-                localStorage.removeItem("access_token");
-                setUser({ email: "", name: "", id: "" });
-                notification.success({ message: "Đăng xuất thành công!" });
-                navigate("/");
-            }
-        } catch {
-            notification.error({ message: "Có lỗi xảy ra khi đăng xuất!" });
+            await logoutUserAPI();
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("access_token");
+            setUser({ email: "", name: "", id: "" });
+            notification.success({ message: "Đăng xuất thành công!" });
+            navigate("/");
         }
     };
 
