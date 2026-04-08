@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Col, Collapse, Row, Select, Slider, Button, Form, Divider } from 'antd';
 import { FilterOutlined, ClearOutlined } from '@ant-design/icons';
+import { useSearchParams } from 'react-router-dom';
 import styles from '../../styles/client.module.scss';
 import JobCard from '../../components/client/card/job.card';
 import { fetchAllSkillAPI } from '../../services/api.service';
@@ -14,6 +15,7 @@ const JobPage = () => {
     const [skills, setSkills] = useState([]);
     const [query, setQuery] = useState("");
     const [form] = Form.useForm();
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         fetchAllSkillAPI('page=1&size=100').then(res => {
@@ -21,6 +23,15 @@ const JobPage = () => {
             setSkills(Array.isArray(result) ? result : []);
         });
     }, []);
+
+    useEffect(() => {
+        const keyword = searchParams.get("keyword");
+        if (keyword) {
+            // Convert keyword to spring-filter syntax
+            const filter = `filter=name ~ '${keyword}' or company.name ~ '${keyword}'`;
+            setQuery(filter);
+        }
+    }, [searchParams]);
 
     const handleFilter = (values) => {
         const params = new URLSearchParams();
