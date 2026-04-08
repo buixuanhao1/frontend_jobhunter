@@ -9,6 +9,11 @@ const loginUserAPI = (username, password) => {
     return axios.post(URL_BACKEND, data)
 }
 
+const callGoogleLogin = (token) => {
+    const URL_BACKEND = "/api/v1/auth/google-login";
+    return axios.post(URL_BACKEND, { token });
+}
+
 const createUserAPI = (name, email, password, address, age) => {
     const URL_BACKEND = "/api/v1/users";
     const data = {
@@ -345,12 +350,16 @@ const callUpdateSubscriber = (data) => {
     return axios.put(URL_BACKEND, data);
 };
 
-
+// Auth APIs
+const forgotPasswordAPI = (email) => axios.post('/api/v1/auth/forgot-password', { email });
+const verifyOtpAPI = (email, otp) => axios.post('/api/v1/auth/verify-otp', { email, otp });
+const resetPasswordAPI = (email, otp, newPassword) => axios.post('/api/v1/auth/reset-password', { email, otp, newPassword });
 
 export {
     deleteCompanyAPI, logoutUserAPI, getAccount, registerUserAPI, callFetchJobById, fetchAllJobAPI, callFetchCompanyById, fetchAllCompanyAPI,
     loginUserAPI, createUserAPI, fetchAllUserAPI, updateUserAPI, deleteUserAPI, callCreateCompany, callUpdateCompany, callUploadSingleFile,
-    callCreateUser, callUpdateUser, callFetchUserById,
+    callCreateUser, callUpdateUser, callFetchUserById, callGoogleLogin,
+    forgotPasswordAPI, verifyOtpAPI, resetPasswordAPI,
     // Skill APIs
     fetchAllSkillAPI, callCreateSkill, callUpdateSkill, callDeleteSkill, callFetchSkillById,
     // Job APIs

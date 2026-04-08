@@ -6,6 +6,7 @@ import {
 } from "@ant-design/icons";
 import { registerUserAPI } from "../services/api.service";
 import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 import './auth.css';
 
 const { Option } = Select;
@@ -13,29 +14,34 @@ const { Option } = Select;
 const RegisterPage = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const onFinish = async (values) => {
-        // Gửi role mặc định là USER (id=2)
-        const res = await registerUserAPI(
-            values.name,
-            values.email,
-            values.password,
-            values.gender,
-            values.address,
-            values.age
-        );
-        if (res.data) {
-            notification.success({
-                message: "Đăng ký thành công!",
-                description: "Tài khoản của bạn đã được tạo. Hãy đăng nhập để tiếp tục.",
-                duration: 3
-            });
-            navigate("/login");
-        } else {
-            notification.error({
-                message: "Đăng ký thất bại",
-                description: typeof res.message === "string" ? res.message : "Email có thể đã được sử dụng"
-            });
+        setLoading(true);
+        try {
+            const res = await registerUserAPI(
+                values.name,
+                values.email,
+                values.password,
+                values.gender,
+                values.address,
+                parseInt(values.age, 10)
+            );
+            if (res.data) {
+                notification.success({
+                    message: "Đăng ký thành công!",
+                    description: "Tài khoản của bạn đã được tạo. Hãy đăng nhập để tiếp tục.",
+                    duration: 3
+                });
+                navigate("/login");
+            } else {
+                notification.error({
+                    message: "Đăng ký thất bại",
+                    description: typeof res.message === "string" ? res.message : "Email có thể đã được sử dụng"
+                });
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -96,11 +102,14 @@ const RegisterPage = () => {
                             <Form.Item
                                 name="age"
                                 label="Tuổi"
-                                rules={[{ required: true, message: "Vui lòng nhập tuổi" }]}
+                                rules={[
+                                    { required: true, message: "Vui lòng nhập tuổi" },
+                                    { type: "number", min: 18, message: "Tuổi phải ít nhất 18", transform: (v) => Number(v) }
+                                ]}
                             >
                                 <Input
                                     type="number"
-                                    min={16}
+                                    min={18}
                                     max={100}
                                     placeholder="25"
                                     className="auth-input"
@@ -129,7 +138,11 @@ const RegisterPage = () => {
                             label="Mật khẩu"
                             rules={[
                                 { required: true, message: "Vui lòng nhập mật khẩu" },
-                                { min: 6, message: "Mật khẩu ít nhất 6 ký tự" }
+                                { min: 6, message: "Mật khẩu ít nhất 6 ký tự" },
+                                {
+                                    pattern: /^(?=.*[A-Z])(?=.*\d).+$/,
+                                    message: "Mật khẩu phải có ít nhất 1 chữ hoa và 1 chữ số"
+                                }
                             ]}
                         >
                             <Input.Password
@@ -197,9 +210,11 @@ const RegisterPage = () => {
                                 type="primary"
                                 htmlType="submit"
                                 className="auth-submit-btn"
+                                loading={loading}
+                                disabled={loading}
                                 block
                             >
-                                Tạo tài khoản
+                                {loading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
                             </Button>
                         </Form.Item>
 

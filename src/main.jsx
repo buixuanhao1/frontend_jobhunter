@@ -2,10 +2,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'antd/dist/reset.css'; // Cho phiên bản mới của Ant Design
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import App from './App.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import Register from './pages/Register.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import HomePage from './pages/home/index.jsx';
 import UserPage from './pages/User.jsx';
 import JobPage from './pages/job/index.jsx';
@@ -91,12 +93,15 @@ const router = createBrowserRouter([
   },
 
   { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/register', element: <Register /> },
   { path: '*', element: <ErrorPage /> }, // ✅ Route 404
 ]);
 
 createRoot(document.getElementById('root')).render(
-  <AuthWrapper>
-    <RouterProvider router={router} />
-  </AuthWrapper>
+  <GoogleOAuthProvider clientId="968516051128-i5i9mnabmj9jok3dgegisg59kh4s26bt.apps.googleusercontent.com">
+    <AuthWrapper>
+      <RouterProvider router={router} />
+    </AuthWrapper>
+  </GoogleOAuthProvider>
 );
