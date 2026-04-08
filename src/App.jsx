@@ -3,11 +3,14 @@ import Footer from "./components/client/layout/footer";
 import ChatBox from "./components/chat/ChatBox";
 import { Outlet } from "react-router-dom";
 import { getAccount } from "./services/api.service";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./components/context/auth.context";
+import IntroScreen from "./components/IntroScreen";
 
 function App() {
   const { setUser } = useContext(AuthContext);
+  const [showIntro, setShowIntro] = useState(true);
+
   useEffect(() => {
     GetAccount();
   }, []);
@@ -43,6 +46,7 @@ function App() {
 
   return (
     <>
+      {showIntro && <IntroScreen onComplete={() => setShowIntro(false)} />}
       <Header />
       <Outlet />
       <Footer />
